@@ -1,0 +1,77 @@
+{
+  "meta": { "data_version": "1.2.0", "created": "2024-02-02", "revision": 2 },
+  "info": {
+    "balls_per_over": 6,
+    "dates": ["2024-02-02"],
+    "event": { "name": "Maiden Test T20 Cup", "match_number": 3, "stage": "Final" },
+    "gender": "male",
+    "match_type": "T20",
+    "overs": 20,
+    "team_type": "international",
+    "teams": ["Gamma", "Delta"],
+    "city": "T20 City",
+    "season": "2024",
+    "toss": { "decision": "field", "winner": "Delta" },
+    "outcome": { "result": "tie", "eliminator": "Gamma" },
+    "players": {
+      "Gamma": ["G One", "G Two"],
+      "Delta": ["D One", "D Two"]
+    },
+    "registry": {
+      "people": {
+        "G One": "ggg00001",
+        "G Two": "ggg00002",
+        "D One": "ddd00001",
+        "D Two": "ddd00002"
+      }
+    }
+  },
+  "innings": [
+    {
+      "team": "Gamma",
+      "overs": [
+        {
+          "over": 0,
+          "deliveries": [
+            {
+              "batter": "G One",
+              "bowler": "D One",
+              "non_striker": "G Two",
+              "extras": { "legbyes": 2 },
+              "runs": { "batter": 0, "extras": 2, "total": 2 }
+            },
+            {
+              "batter": "G One",
+              "bowler": "D One",
+              "non_striker": "G Two",
+              "runs": { "batter": 1, "extras": 0, "total": 1 }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "team": "Delta",
+      "overs": [
+        {
+          "over": 0,
+          "deliveries": [
+            {
+              "batter": "D One",
+              "bowler": "G Two",
+              "non_striker": "D Two",
+              "runs": { "batter": 3, "extras": 0, "total": 3 },
+              "wickets": [
+                {
+                  "player_out": "D Two",
+                  "kind": "run out",
+                  "fielders": [{ "name": "G One" }, { "name": "G Two" }]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

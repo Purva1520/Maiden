@@ -20,9 +20,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "python:test": ".venv/bin/python -m pytest",
-    "python:lint": ".venv/bin/python -m ruff check data-pipeline tests",
-    "python:format": ".venv/bin/python -m ruff format data-pipeline tests",
-    "python:format:check": ".venv/bin/python -m ruff format --check data-pipeline tests"
+    "python:lint": ".venv/bin/python -m ruff check data-pipeline tests scripts",
+    "python:format": ".venv/bin/python -m ruff format data-pipeline tests scripts",
+    "python:format:check": ".venv/bin/python -m ruff format --check data-pipeline tests scripts",
+    "data:download": ".venv/bin/python scripts/download_cricsheet.py",
+    "data:build": ".venv/bin/python scripts/build_database.py",
+    "data:validate": ".venv/bin/python scripts/validate_database.py"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

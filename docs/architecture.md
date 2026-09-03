@@ -21,17 +21,19 @@ maiden/
 │   ├── game-data/    # Curated game-data access layer (placeholder)
 │   └── ui/           # Reusable UI components (placeholder)
 ├── data/
-│   ├── raw/          # Original sourced datasets (git-ignored)
-│   ├── processed/    # Generated analytical datasets (git-ignored)
+│   ├── raw/          # Original sourced archives, e.g. raw/cricsheet/*.zip (git-ignored)
+│   ├── processed/    # maiden.sqlite + ingestion_report.* (git-ignored)
 │   └── game/         # Curated game-ready datasets
-├── data-pipeline/    # Python pipeline (ingest → cleaning → normalization →
-│   │                 #   ratings → validation → export)
-│   ├── ingest/
-│   ├── cleaning/
-│   ├── normalization/
-│   ├── ratings/
-│   ├── validation/
-│   └── export/
+├── data-pipeline/    # Python pipeline (ingest → parsers → cleaning →
+│   │                 #   validation → export)
+│   ├── core/         # config, logging, build orchestration
+│   ├── ingest/       # sources, downloader, ZIP streaming
+│   ├── parsers/      # Cricsheet JSON → intermediate model
+│   ├── cleaning/     # name/date/format normalization
+│   ├── normalization/# (reserved for Phase 3+)
+│   ├── ratings/      # (reserved for Phase 5)
+│   ├── validation/   # data-quality checks + ingestion report
+│   └── export/       # SQLite schema + buffered writer
 ├── notebooks/        # Exploratory Jupyter notebooks (research)
 ├── tests/            # Cross-cutting & Python pipeline tests
 ├── docs/             # Documentation (this directory)
@@ -88,12 +90,18 @@ pipeline. **Current:** placeholder. **Future:** loads `data/game/` artifacts.
 Reusable visual components / design system. **Current:** placeholder. **Future:**
 the Maiden component library (Phase 10).
 
-### data-pipeline (Python) — _foundation only_
+### data-pipeline (Python) — _Phase 1 implemented_
 
-Offline, research-time data processing, staged as **ingest → cleaning →
-normalization → ratings → validation → export**. **Current:** package skeleton,
-scientific stack (pandas/numpy/scipy) and pytest wired up. **Future:** Cricsheet
-ingestion (Phase 1) through the original Maiden rating system (Phase 5).
+Offline, research-time data processing, staged as **ingest → parsers → cleaning →
+validation → export**. **Current (Phase 1):** a reproducible Cricsheet pipeline
+that reads male ODI/T20 JSON archives and produces a normalized, validated
+`data/processed/maiden.sqlite` with human- and machine-readable ingestion
+reports. Entry points: `scripts/download_cricsheet.py`, `scripts/build_database.py`,
+`scripts/validate_database.py`. See [`data-schema.md`](data-schema.md) and
+[`cricsheet-mapping.md`](cricsheet-mapping.md). **Future:** player identity
+reconciliation (Phase 3), era normalization (Phase 4) and the original Maiden
+rating system (Phase 5). The `normalization/` and `ratings/` packages are
+reserved placeholders for that work.
 
 ### data/
 

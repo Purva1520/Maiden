@@ -5,8 +5,8 @@ is planned scope, not existing functionality.
 
 | Phase | Name                              | Status         |
 | ----- | --------------------------------- | -------------- |
-| 0     | Project Foundation                | ✅ **Current** |
-| 1     | Cricsheet Data Pipeline           | Planned        |
+| 0     | Project Foundation                | ✅ Done        |
+| 1     | Cricsheet Data Pipeline           | ✅ **Current** |
 | 2     | Historical World Cup Database     | Planned        |
 | 3     | Player Identity & Normalization   | Planned        |
 | 4     | Tournament Statistics & Era Norm. | Planned        |
@@ -20,11 +20,20 @@ is planned scope, not existing functionality.
 | 12    | Testing, Balance & Production     | Planned        |
 | 13    | Optional Features                 | Planned        |
 
-## Phase 0 — Project Foundation (current)
+## Phase 0 — Project Foundation (done)
 
 Establishes the monorepo, toolchain, package boundaries, testing, linting,
-formatting, environment configuration, documentation and CI scaffolding. **No
-gameplay, ratings, simulation, or historical data ingestion is implemented.**
+formatting, environment configuration, documentation and CI scaffolding.
+
+## Phase 1 — Cricsheet Data Pipeline (current)
+
+A reproducible Python pipeline that turns raw Cricsheet ODI/T20 male JSON
+archives into a normalized, validated SQLite database
+(`data/processed/maiden.sqlite`): ingest → parse → clean → validate → export,
+with human- and machine-readable ingestion reports. **No ratings, era
+normalization, World Cup squad curation, simulation, campaign or game UI is
+implemented** — those remain in later phases. See
+[`data-schema.md`](data-schema.md) and [`cricsheet-mapping.md`](cricsheet-mapping.md).
 
 ## Game vision (future)
 

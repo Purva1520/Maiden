@@ -75,6 +75,43 @@ pip install -e ".[dev]"
 
 You can also activate the venv and run the tools directly (`pytest`, `ruff …`).
 
+## Data pipeline (Phase 1)
+
+Turns raw Cricsheet archives into `data/processed/maiden.sqlite`. Downloads are
+**explicit** — building never downloads as a side effect.
+
+```bash
+# 1. Download the archives (into data/raw/cricsheet/). Explicit, ~31 MB total.
+python scripts/download_cricsheet.py                 # ODI + T20
+python scripts/download_cricsheet.py --format odi    # or: t20 | all
+python scripts/download_cricsheet.py --force         # re-download
+
+# 2. Build the normalized database (rebuilds from scratch; atomic replace).
+python scripts/build_database.py                     # ODI + T20
+python scripts/build_database.py --format odi        # or: t20 | all
+
+# 3. Validate an existing database (+ sample queries).
+python scripts/validate_database.py
+python scripts/validate_database.py --db data/processed/maiden.sqlite
+```
+
+Equivalent pnpm wrappers exist: `pnpm data:download`, `pnpm data:build`,
+`pnpm data:validate`.
+
+Outputs (all under `data/processed/`, git-ignored):
+
+- `maiden.sqlite` — the normalized database (schema version 1)
+- `ingestion_report.json` — machine-readable metrics
+- `ingestion_report.txt` — human-readable report
+
+The build is transaction-safe: it writes to a temporary database and only
+atomically replaces `maiden.sqlite` after validation passes, so a failed build
+never corrupts a known-good database. Enable foreign keys when querying:
+`PRAGMA foreign_keys = ON;`.
+
+Schema and mapping: [`data-schema.md`](data-schema.md),
+[`cricsheet-mapping.md`](cricsheet-mapping.md).
+
 ## Notes on placeholder commands
 
 Several packages are Phase 0 **placeholders** (`simulator`, `game-data`, `ui`).

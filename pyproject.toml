@@ -44,5 +44,18 @@ extend-exclude = [".venv", "node_modules", "data", "notebooks"]
 # A lightweight, sensible baseline: pyflakes, pycodestyle, isort, pyupgrade, bugbear.
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.isort]
+# First-party packages live under data-pipeline/ (on the path at runtime/tests).
+known-first-party = [
+  "core",
+  "ingest",
+  "parsers",
+  "cleaning",
+  "validation",
+  "export",
+  "normalization",
+  "ratings",
+]
+
 [tool.ruff.format]
 quote-style = "double"

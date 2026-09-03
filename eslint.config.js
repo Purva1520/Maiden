@@ -16,9 +16,11 @@ export default tseslint.config(
       '**/.vite/**',
       '**/node_modules/**',
       '**/coverage/**',
+      '**/.venv/**',
       'data/**',
       'data-pipeline/**',
       'notebooks/**',
+      'scripts/**/*.py',
     ],
   },
 
