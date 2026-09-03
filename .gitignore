@@ -1,0 +1,45 @@
+# ---- Node / JavaScript / TypeScript ----
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+*.tsbuildinfo
+
+# ---- Python ----
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.mypy_cache/
+
+# ---- Environment ----
+.env
+.env.*
+!.env.example
+
+# ---- OS / editor ----
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# ---- Logs ----
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# ---- Data policy ----
+# Ignore the CONTENTS of raw/ and processed/ (large downloaded archives and the
+# regenerable maiden.sqlite / ingestion reports), but keep the directory
+# structure markers (.gitkeep) and any README docs. data/game/ is intentionally
+# NOT ignored so small, curated game-ready files may be committed later.
+data/raw/**
+data/processed/**
+# Re-include directories so the .gitkeep / README negations below can apply even
+# inside otherwise-ignored subdirectories (e.g. data/raw/cricsheet/).
+!data/**/
+!data/**/.gitkeep
+!data/**/README.md

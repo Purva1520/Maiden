@@ -1,0 +1,84 @@
+{
+  "meta": { "data_version": "1.2.0", "created": "2024-01-01", "revision": 1 },
+  "info": {
+    "balls_per_over": 6,
+    "city": "Testville",
+    "dates": ["2024-01-01"],
+    "event": { "name": "Maiden Test ODI Series", "match_number": 1 },
+    "gender": "male",
+    "match_type": "ODI",
+    "match_type_number": 9999,
+    "overs": 50,
+    "team_type": "international",
+    "teams": ["Alpha", "Beta"],
+    "venue": "Test Oval",
+    "season": "2023/24",
+    "toss": { "decision": "bat", "winner": "Alpha" },
+    "outcome": { "by": { "runs": 10 }, "winner": "Alpha" },
+    "player_of_match": ["A One"],
+    "officials": { "umpires": ["U First", "U Second"], "match_referees": ["R Ref"] },
+    "players": {
+      "Alpha": ["A One", "A Two"],
+      "Beta": ["B One", "B Two"]
+    },
+    "registry": {
+      "people": {
+        "A One": "aaa00001",
+        "A Two": "aaa00002",
+        "B One": "bbb00001",
+        "B Two": "bbb00002",
+        "R Ref": "rrr00001"
+      }
+    }
+  },
+  "innings": [
+    {
+      "team": "Alpha",
+      "overs": [
+        {
+          "over": 0,
+          "deliveries": [
+            {
+              "batter": "A One",
+              "bowler": "B One",
+              "non_striker": "A Two",
+              "runs": { "batter": 4, "extras": 0, "total": 4 }
+            },
+            {
+              "batter": "A One",
+              "bowler": "B One",
+              "non_striker": "A Two",
+              "extras": { "wides": 1 },
+              "runs": { "batter": 0, "extras": 1, "total": 1 }
+            },
+            {
+              "batter": "A One",
+              "bowler": "B One",
+              "non_striker": "A Two",
+              "runs": { "batter": 0, "extras": 0, "total": 0 },
+              "wickets": [
+                { "player_out": "A One", "kind": "caught", "fielders": [{ "name": "B Two" }] }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "team": "Beta",
+      "overs": [
+        {
+          "over": 0,
+          "deliveries": [
+            {
+              "batter": "B One",
+              "bowler": "A Two",
+              "non_striker": "B Two",
+              "runs": { "batter": 6, "extras": 0, "total": 6 }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

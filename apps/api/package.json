@@ -1,0 +1,25 @@
+{
+  "name": "@maiden/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Maiden API (Fastify). Phase 0 provides configuration loading and a health endpoint only.",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@maiden/shared": "workspace:*",
+    "fastify": "5.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.1",
+    "tsx": "4.23.13",
+    "typescript": "6.0.3",
+    "vitest": "5.0.0"
+  }
+}
