@@ -1,0 +1,19 @@
+# Build output and dependencies
+**/dist/
+**/build/
+**/.vite/
+**/coverage/
+node_modules/
+pnpm-lock.yaml
+
+# Python
+.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+
+# Data directories — never auto-format sourced or generated datasets.
+data/
+
+# Notebooks are managed separately.
+notebooks/

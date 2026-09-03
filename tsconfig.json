@@ -1,0 +1,15 @@
+{
+  // Root TypeScript config for the monorepo.
+  //
+  // Each workspace package (apps/*, packages/*) owns its own tsconfig.json that
+  // extends tsconfig.base.json and is type-checked independently via its
+  // `typecheck` script (aggregated by `pnpm typecheck`). This root config exists
+  // so editors and tooling opened at the repository root resolve the shared base
+  // options; it intentionally compiles no files itself.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "files": [],
+  "include": []
+}

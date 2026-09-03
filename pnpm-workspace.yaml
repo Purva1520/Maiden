@@ -1,0 +1,19 @@
+# pnpm workspace definition for the Maiden monorepo.
+# JavaScript/TypeScript packages live under apps/* and packages/*.
+# The Python data pipeline (data-pipeline/) is intentionally NOT a pnpm
+# workspace member; it is managed with pyproject.toml + a virtualenv.
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# esbuild ships a native binary via a build script; it powers Vite and tsx.
+allowBuilds:
+  esbuild: true
+
+# pnpm's minimum-release-age gate delays adopting brand-new versions. These were
+# pinned deliberately for Phase 0 and are excluded from that delay.
+minimumReleaseAgeExclude:
+  - '@types/react-dom@19.2.7'
+  - '@vitest/mocker@5.0.0'
+  - '@vitest/spy@5.0.0'
+  - vitest@5.0.0
