@@ -1,0 +1,222 @@
+[
+  {
+    "tournament_id": "ODI_WC_1975",
+    "year": 1975,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "1975 Cricket World Cup",
+    "edition_number": 1,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_1979",
+    "year": 1979,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "1979 Cricket World Cup",
+    "edition_number": 2,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_1983",
+    "year": 1983,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "1983 Cricket World Cup",
+    "edition_number": 3,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_1987",
+    "year": 1987,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "1987 Cricket World Cup",
+    "edition_number": 4,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_1992",
+    "year": 1992,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "1992 Cricket World Cup",
+    "edition_number": 5,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_1996",
+    "year": 1996,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "1996 Cricket World Cup",
+    "edition_number": 6,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_1999",
+    "year": 1999,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "1999 Cricket World Cup",
+    "edition_number": 7,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_2003",
+    "year": 2003,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "2003 Cricket World Cup",
+    "edition_number": 8,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_2007",
+    "year": 2007,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "2007 Cricket World Cup",
+    "edition_number": 9,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_2011",
+    "year": 2011,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "2011 Cricket World Cup",
+    "edition_number": 10,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_2015",
+    "year": 2015,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "2015 Cricket World Cup",
+    "edition_number": 11,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_2019",
+    "year": 2019,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "2019 Cricket World Cup",
+    "edition_number": 12,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "ODI_WC_2023",
+    "year": 2023,
+    "format": "ODI",
+    "name": "Cricket World Cup",
+    "display_name": "2023 Cricket World Cup",
+    "edition_number": 13,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2007",
+    "year": 2007,
+    "format": "T20",
+    "name": "ICC World Twenty20",
+    "display_name": "2007 ICC World Twenty20",
+    "edition_number": 1,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2009",
+    "year": 2009,
+    "format": "T20",
+    "name": "ICC World Twenty20",
+    "display_name": "2009 ICC World Twenty20",
+    "edition_number": 2,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2010",
+    "year": 2010,
+    "format": "T20",
+    "name": "ICC World Twenty20",
+    "display_name": "2010 ICC World Twenty20",
+    "edition_number": 3,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2012",
+    "year": 2012,
+    "format": "T20",
+    "name": "ICC World Twenty20",
+    "display_name": "2012 ICC World Twenty20",
+    "edition_number": 4,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2014",
+    "year": 2014,
+    "format": "T20",
+    "name": "ICC World Twenty20",
+    "display_name": "2014 ICC World Twenty20",
+    "edition_number": 5,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2016",
+    "year": 2016,
+    "format": "T20",
+    "name": "ICC World Twenty20",
+    "display_name": "2016 ICC World Twenty20",
+    "edition_number": 6,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2021",
+    "year": 2021,
+    "format": "T20",
+    "name": "ICC T20 World Cup",
+    "display_name": "2021 ICC T20 World Cup",
+    "edition_number": 7,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2022",
+    "year": 2022,
+    "format": "T20",
+    "name": "ICC T20 World Cup",
+    "display_name": "2022 ICC T20 World Cup",
+    "edition_number": 8,
+    "status": "completed",
+    "source": "wikipedia"
+  },
+  {
+    "tournament_id": "T20_WC_2024",
+    "year": 2024,
+    "format": "T20",
+    "name": "ICC T20 World Cup",
+    "display_name": "2024 ICC T20 World Cup",
+    "edition_number": 9,
+    "status": "completed",
+    "source": "wikipedia"
+  }
+]

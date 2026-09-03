@@ -207,6 +207,52 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
         FOREIGN KEY (fielder_id) REFERENCES players (player_id)
     )
     """,
+    # -- Phase 2: World Cup tournament tables --------------------------------
+    """
+    CREATE TABLE tournaments (
+        tournament_id   TEXT PRIMARY KEY,
+        year            INTEGER NOT NULL,
+        format          TEXT NOT NULL,       -- 'ODI' | 'T20'
+        name            TEXT NOT NULL,
+        display_name    TEXT NOT NULL,
+        edition_number  INTEGER NOT NULL,
+        status          TEXT NOT NULL DEFAULT 'completed',
+        source          TEXT NOT NULL        -- cricsheet|wikipedia|manual
+    )
+    """,
+    """
+    CREATE TABLE tournament_teams (
+        tournament_id    TEXT NOT NULL,
+        team_id          INTEGER NOT NULL,
+        team_name        TEXT NOT NULL,
+        source           TEXT NOT NULL,
+        source_reference TEXT,
+        PRIMARY KEY (tournament_id, team_id),
+        FOREIGN KEY (tournament_id) REFERENCES tournaments (tournament_id),
+        FOREIGN KEY (team_id) REFERENCES teams (team_id)
+    )
+    """,
+    """
+    CREATE TABLE tournament_squads (
+        tournament_id        TEXT NOT NULL,
+        team_id              INTEGER NOT NULL,
+        player_id            INTEGER NOT NULL,
+        role                 TEXT NOT NULL,         -- BAT|BOWL|ALLROUNDER|WK
+        wicketkeeper         INTEGER NOT NULL,      -- 0/1
+        participated         INTEGER NOT NULL,      -- 0/1
+        squad_order          INTEGER,
+        source               TEXT NOT NULL,         -- cricsheet|wikipedia|manual
+        source_reference     TEXT,
+        source_notes         TEXT,
+        original_player_name TEXT,
+        original_team_name   TEXT,
+        PRIMARY KEY (tournament_id, team_id, player_id),
+        FOREIGN KEY (tournament_id) REFERENCES tournaments (tournament_id),
+        FOREIGN KEY (tournament_id, team_id) REFERENCES tournament_teams (tournament_id, team_id),
+        FOREIGN KEY (team_id) REFERENCES teams (team_id),
+        FOREIGN KEY (player_id) REFERENCES players (player_id)
+    )
+    """,
 )
 
 # Indexes are created AFTER bulk loading (faster) — see docs/data-schema.md for
@@ -230,6 +276,11 @@ INDEX_STATEMENTS: tuple[str, ...] = (
     "CREATE INDEX idx_delivery_wickets_delivery ON delivery_wickets (delivery_id)",
     "CREATE INDEX idx_delivery_wickets_player ON delivery_wickets (player_out_id)",
     "CREATE INDEX idx_wicket_fielders_wicket ON wicket_fielders (wicket_id)",
+    # Phase 2
+    "CREATE INDEX idx_tournament_teams_tournament ON tournament_teams (tournament_id)",
+    "CREATE INDEX idx_tournament_squads_tournament ON tournament_squads (tournament_id)",
+    "CREATE INDEX idx_tournament_squads_player ON tournament_squads (player_id)",
+    "CREATE INDEX idx_tournament_squads_team ON tournament_squads (team_id)",
 )
 
 TABLE_NAMES: tuple[str, ...] = (
@@ -247,6 +298,10 @@ TABLE_NAMES: tuple[str, ...] = (
     "delivery_extras",
     "delivery_wickets",
     "wicket_fielders",
+    # Phase 2
+    "tournaments",
+    "tournament_teams",
+    "tournament_squads",
 )
 
 

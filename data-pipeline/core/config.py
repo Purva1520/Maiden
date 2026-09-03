@@ -17,7 +17,7 @@ PIPELINE_VERSION = "1.0.0"
 # Bump SCHEMA_VERSION whenever the SQLite schema changes so later phases can
 # detect which schema generated a given database. This is intentionally NOT a
 # full migration framework (Phase 1 rebuilds from source).
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SOURCE_NAME = "cricsheet"
 
@@ -38,6 +38,12 @@ DB_BUILD_PATH = DB_PATH.with_name("." + DB_PATH.name + ".build")
 
 REPORT_JSON = PROCESSED_DIR / "ingestion_report.json"
 REPORT_TXT = PROCESSED_DIR / "ingestion_report.txt"
+
+# Phase 2: World Cup curated data and reports
+GAME_DIR = DATA_DIR / "game"
+WORLD_CUP_DIR = GAME_DIR / "world_cups"
+WORLD_CUP_REPORT_JSON = PROCESSED_DIR / "world_cup_report.json"
+WORLD_CUP_REPORT_TXT = PROCESSED_DIR / "world_cup_report.txt"
 
 # ---------------------------------------------------------------------------
 # Format canonicalization
