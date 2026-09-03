@@ -27,20 +27,14 @@ logger = get_logger("validate_world_cups")
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Validate the Phase 2 World Cup database."
-    )
-    parser.add_argument(
-        "--db", default=str(config.DB_PATH), help="path to the SQLite database"
-    )
+    parser = argparse.ArgumentParser(description="Validate the Phase 2 World Cup database.")
+    parser.add_argument("--db", default=str(config.DB_PATH), help="path to the SQLite database")
     args = parser.parse_args(argv)
 
     configure_logging()
     db_path = Path(args.db)
     if not db_path.exists():
-        logger.error(
-            "Database not found: %s (run build_world_cup_database.py first)", db_path
-        )
+        logger.error("Database not found: %s (run build_world_cup_database.py first)", db_path)
         return 2
 
     conn = sqlite3.connect(db_path)

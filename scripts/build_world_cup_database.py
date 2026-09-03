@@ -23,7 +23,7 @@ sys.path.insert(0, str(REPO_ROOT / "data-pipeline"))
 
 from core import config  # noqa: E402
 from core.logging_setup import configure_logging, get_logger  # noqa: E402
-from export.schema import SCHEMA_STATEMENTS, INDEX_STATEMENTS  # noqa: E402
+from export.schema import INDEX_STATEMENTS, SCHEMA_STATEMENTS  # noqa: E402
 from normalization.world_cups import (  # noqa: E402
     WorldCupBuilder,
     load_curated_squads,
@@ -31,7 +31,7 @@ from normalization.world_cups import (  # noqa: E402
     load_tournaments,
     validate_curated_data,
 )
-from validation.world_cup_report import WorldCupReport, generate_world_cup_report  # noqa: E402
+from validation.world_cup_report import generate_world_cup_report  # noqa: E402
 
 logger = get_logger("build_world_cups")
 
@@ -40,9 +40,7 @@ def _ensure_schema(conn: sqlite3.Connection) -> None:
     """Create Phase 1 + Phase 2 tables if they don't exist yet."""
     existing = {
         row[0]
-        for row in conn.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()
+        for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
     }
     if "tournaments" not in existing:
         logger.info("Phase 2 tables not found — creating schema")
@@ -66,9 +64,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Build the Phase 2 World Cup tables in maiden.sqlite."
     )
-    parser.add_argument(
-        "--db", default=str(config.DB_PATH), help="path to the SQLite database"
-    )
+    parser.add_argument("--db", default=str(config.DB_PATH), help="path to the SQLite database")
     args = parser.parse_args(argv)
 
     configure_logging()
@@ -86,7 +82,9 @@ def main(argv: list[str] | None = None) -> int:
 
     logger.info(
         "Loaded: %d tournaments, %d team entries, %d squad records",
-        len(tournaments), len(teams), len(squads),
+        len(tournaments),
+        len(teams),
+        len(squads),
     )
 
     # --- Validate curated data ---
@@ -109,6 +107,12 @@ def main(argv: list[str] | None = None) -> int:
 
         builder = WorldCupBuilder(conn)
         stats = builder.build(tournaments, teams, squads)
+        logger.info(
+            "Built %d tournaments, %d teams, %d squad entries",
+            stats.tournaments_loaded,
+            stats.teams_loaded,
+            stats.squad_entries_loaded,
+        )
 
         # --- Generate report ---
         logger.info("Generating World Cup report")

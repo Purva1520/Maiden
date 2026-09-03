@@ -13,7 +13,6 @@ from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
-from core import config
 from core.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -168,12 +167,8 @@ def generate_world_cup_report(conn: sqlite3.Connection) -> WorldCupReport:
         return int(row[0]) if row and row[0] is not None else 0
 
     # --- Tournament counts ---
-    report.odi_tournaments = scalar(
-        "SELECT COUNT(*) FROM tournaments WHERE format = 'ODI'"
-    )
-    report.t20_tournaments = scalar(
-        "SELECT COUNT(*) FROM tournaments WHERE format = 'T20'"
-    )
+    report.odi_tournaments = scalar("SELECT COUNT(*) FROM tournaments WHERE format = 'ODI'")
+    report.t20_tournaments = scalar("SELECT COUNT(*) FROM tournaments WHERE format = 'T20'")
     report.total_tournaments = scalar("SELECT COUNT(*) FROM tournaments")
 
     if report.odi_tournaments != 13:
@@ -202,23 +197,15 @@ def generate_world_cup_report(conn: sqlite3.Connection) -> WorldCupReport:
     report.source_wikipedia = scalar(
         "SELECT COUNT(*) FROM tournament_squads WHERE source = 'wikipedia'"
     )
-    report.source_manual = scalar(
-        "SELECT COUNT(*) FROM tournament_squads WHERE source = 'manual'"
-    )
+    report.source_manual = scalar("SELECT COUNT(*) FROM tournament_squads WHERE source = 'manual'")
 
     # --- Role breakdown ---
-    report.role_bat = scalar(
-        "SELECT COUNT(*) FROM tournament_squads WHERE role = 'BAT'"
-    )
-    report.role_bowl = scalar(
-        "SELECT COUNT(*) FROM tournament_squads WHERE role = 'BOWL'"
-    )
+    report.role_bat = scalar("SELECT COUNT(*) FROM tournament_squads WHERE role = 'BAT'")
+    report.role_bowl = scalar("SELECT COUNT(*) FROM tournament_squads WHERE role = 'BOWL'")
     report.role_allrounder = scalar(
         "SELECT COUNT(*) FROM tournament_squads WHERE role = 'ALLROUNDER'"
     )
-    report.role_wk = scalar(
-        "SELECT COUNT(*) FROM tournament_squads WHERE role = 'WK'"
-    )
+    report.role_wk = scalar("SELECT COUNT(*) FROM tournament_squads WHERE role = 'WK'")
     report.wicketkeeper_true = scalar(
         "SELECT COUNT(*) FROM tournament_squads WHERE wicketkeeper = 1"
     )
@@ -238,14 +225,16 @@ def generate_world_cup_report(conn: sqlite3.Connection) -> WorldCupReport:
             (tid,),
         ).fetchall()
         source_mix = "/".join(f"{s[0]}({s[1]})" for s in sources) if sources else "none"
-        report.tournament_details.append({
-            "tournament_id": tid,
-            "format": t[2],
-            "year": t[1],
-            "teams": teams,
-            "squads": squads,
-            "source_mix": source_mix,
-        })
+        report.tournament_details.append(
+            {
+                "tournament_id": tid,
+                "format": t[2],
+                "year": t[1],
+                "teams": teams,
+                "squads": squads,
+                "source_mix": source_mix,
+            }
+        )
 
     # --- Validation checks ---
     # Duplicate squad records (PK should prevent, but verify)
@@ -275,9 +264,7 @@ def generate_world_cup_report(conn: sqlite3.Connection) -> WorldCupReport:
         "   OR (wicketkeeper = 1 AND role != 'WK')"
     )
     if report.wk_inconsistencies:
-        report.warnings.append(
-            f"{report.wk_inconsistencies} WK/wicketkeeper inconsistencies"
-        )
+        report.warnings.append(f"{report.wk_inconsistencies} WK/wicketkeeper inconsistencies")
 
     # FK checks: tournament_teams.tournament_id -> tournaments
     report.unknown_tournaments = scalar(
@@ -285,7 +272,9 @@ def generate_world_cup_report(conn: sqlite3.Connection) -> WorldCupReport:
         "WHERE NOT EXISTS (SELECT 1 FROM tournaments t WHERE t.tournament_id = tt.tournament_id)"
     )
     if report.unknown_tournaments:
-        report.errors.append(f"{report.unknown_tournaments} team entries reference unknown tournaments")
+        report.errors.append(
+            f"{report.unknown_tournaments} team entries reference unknown tournaments"
+        )
 
     # FK checks: tournament_squads.team_id -> tournament_teams
     report.unknown_teams = scalar(
@@ -309,9 +298,9 @@ def generate_world_cup_report(conn: sqlite3.Connection) -> WorldCupReport:
     # PRAGMA foreign_key_check (covers all FKs)
     fk_violations = conn.execute("PRAGMA foreign_key_check").fetchall()
     # Filter to Phase 2 tables only
-    phase2_violations = [v for v in fk_violations if v[0] in (
-        "tournaments", "tournament_teams", "tournament_squads"
-    )]
+    phase2_violations = [
+        v for v in fk_violations if v[0] in ("tournaments", "tournament_teams", "tournament_squads")
+    ]
     report.fk_violations = len(phase2_violations)
     if report.fk_violations:
         report.errors.append(f"{report.fk_violations} foreign key violations in Phase 2 tables")

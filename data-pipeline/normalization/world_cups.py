@@ -27,11 +27,27 @@ logger = get_logger(__name__)
 VALID_ROLES = frozenset({"BAT", "BOWL", "ALLROUNDER", "WK"})
 VALID_SOURCES = frozenset({"cricsheet", "wikipedia", "manual"})
 
-REQUIRED_TOURNAMENT_FIELDS = {"tournament_id", "year", "format", "name", "display_name",
-                              "edition_number", "source"}
+REQUIRED_TOURNAMENT_FIELDS = {
+    "tournament_id",
+    "year",
+    "format",
+    "name",
+    "display_name",
+    "edition_number",
+    "source",
+}
 REQUIRED_TEAM_FIELDS = {"tournament_id", "team_name", "source"}
-REQUIRED_SQUAD_FIELDS = {"tournament_id", "year", "format", "team", "player",
-                         "role", "wicketkeeper", "participated", "source"}
+REQUIRED_SQUAD_FIELDS = {
+    "tournament_id",
+    "year",
+    "format",
+    "team",
+    "player",
+    "role",
+    "wicketkeeper",
+    "participated",
+    "source",
+}
 
 
 # ---------------------------------------------------------------------------
@@ -125,9 +141,7 @@ def validate_curated_data(
 
         team_key = (s["tournament_id"], s["team"])
         if team_key not in team_keys:
-            errors.append(
-                f"Squad references unknown team: {s['team']} in {s['tournament_id']}"
-            )
+            errors.append(f"Squad references unknown team: {s['team']} in {s['tournament_id']}")
 
         if s["role"] not in VALID_ROLES:
             errors.append(f"Invalid role '{s['role']}' for {s['player']} in {s['tournament_id']}")
@@ -181,8 +195,8 @@ class WorldCupBuilder:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self.conn = conn
         self.stats = WorldCupBuildStats()
-        self._team_cache: dict[str, int] = {}      # lower(canonical) -> team_id
-        self._player_cache: dict[str, int] = {}     # lower(canonical) -> player_id
+        self._team_cache: dict[str, int] = {}  # lower(canonical) -> team_id
+        self._player_cache: dict[str, int] = {}  # lower(canonical) -> player_id
         self._next_team_id: int = 1
         self._next_player_id: int = 1
 

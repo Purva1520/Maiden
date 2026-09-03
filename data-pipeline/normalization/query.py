@@ -40,9 +40,7 @@ def _normalize_format(fmt: str) -> str:
     key = fmt.strip().upper()
     result = _FORMAT_ALIASES.get(key)
     if result is None:
-        raise ValueError(
-            f"Unsupported format: {fmt!r}. Use 'ODI' or 'T20'."
-        )
+        raise ValueError(f"Unsupported format: {fmt!r}. Use 'ODI' or 'T20'.")
     return result
 
 
@@ -69,6 +67,7 @@ def _tournament_id(fmt: str, year: int) -> str:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def list_tournaments(*, db_path: Path | None = None) -> list[dict]:
     """Return all 22 tournament records, sorted by format then year."""
@@ -131,8 +130,7 @@ def get_tournament_teams(
             raise ValueError(f"Tournament not found: {fmt} {year} (id={tid})")
 
         rows = conn.execute(
-            "SELECT team_name FROM tournament_teams WHERE tournament_id = ? "
-            "ORDER BY team_name",
+            "SELECT team_name FROM tournament_teams WHERE tournament_id = ? ORDER BY team_name",
             (tid,),
         ).fetchall()
         return [r["team_name"] for r in rows]
@@ -181,9 +179,7 @@ def getSquad(
     conn = _connect(db_path)
     try:
         # Verify tournament exists
-        t_row = conn.execute(
-            "SELECT 1 FROM tournaments WHERE tournament_id = ?", (tid,)
-        ).fetchone()
+        t_row = conn.execute("SELECT 1 FROM tournaments WHERE tournament_id = ?", (tid,)).fetchone()
         if t_row is None:
             raise ValueError(
                 f"Tournament not found: {fmt} {year} (id={tid}). "
@@ -199,14 +195,12 @@ def getSquad(
         if team_row is None:
             # List available teams for a helpful error
             available = conn.execute(
-                "SELECT team_name FROM tournament_teams WHERE tournament_id = ? "
-                "ORDER BY team_name",
+                "SELECT team_name FROM tournament_teams WHERE tournament_id = ? ORDER BY team_name",
                 (tid,),
             ).fetchall()
             team_list = ", ".join(r["team_name"] for r in available)
             raise ValueError(
-                f"Team {team!r} not found in {canon_fmt} {year}. "
-                f"Available teams: {team_list}"
+                f"Team {team!r} not found in {canon_fmt} {year}. Available teams: {team_list}"
             )
 
         team_id = team_row["team_id"]
