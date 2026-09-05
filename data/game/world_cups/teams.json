@@ -1075,6 +1075,12 @@
   },
   {
     "tournament_id": "T20_WC_2012",
+    "team_name": "Afghanistan",
+    "source": "wikipedia",
+    "source_reference": "2012 ICC World Twenty20 squads"
+  },
+  {
+    "tournament_id": "T20_WC_2012",
     "team_name": "Australia",
     "source": "wikipedia",
     "source_reference": "2012 ICC World Twenty20 squads"
@@ -1141,6 +1147,12 @@
   },
   {
     "tournament_id": "T20_WC_2014",
+    "team_name": "Afghanistan",
+    "source": "wikipedia",
+    "source_reference": "2014 ICC World Twenty20 squads"
+  },
+  {
+    "tournament_id": "T20_WC_2014",
     "team_name": "Australia",
     "source": "wikipedia",
     "source_reference": "2014 ICC World Twenty20 squads"
@@ -1154,6 +1166,12 @@
   {
     "tournament_id": "T20_WC_2014",
     "team_name": "England",
+    "source": "wikipedia",
+    "source_reference": "2014 ICC World Twenty20 squads"
+  },
+  {
+    "tournament_id": "T20_WC_2014",
+    "team_name": "Hong Kong",
     "source": "wikipedia",
     "source_reference": "2014 ICC World Twenty20 squads"
   },

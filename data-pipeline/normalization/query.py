@@ -206,7 +206,7 @@ def getSquad(
         team_id = team_row["team_id"]
 
         rows = conn.execute(
-            "SELECT p.display_name AS player, ts.role, ts.wicketkeeper, "
+            "SELECT p.player_id, p.display_name AS player, ts.role, ts.wicketkeeper, "
             "ts.participated, ts.squad_order "
             "FROM tournament_squads ts "
             "JOIN players p ON ts.player_id = p.player_id "
@@ -218,6 +218,7 @@ def getSquad(
         return [
             {
                 "player": r["player"],
+                "player_id": r["player_id"],
                 "role": r["role"],
                 "wicketkeeper": bool(r["wicketkeeper"]),
                 "participated": bool(r["participated"]),

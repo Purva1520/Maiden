@@ -1,8 +1,9 @@
 # Maiden Database Schema
 
-The Phase 1 pipeline produces a normalized SQLite database at
+The Maiden data pipeline produces a normalized SQLite database at
 `data/processed/maiden.sqlite` (schema version **1**). This document describes
-every table, its keys, and the relationships between them.
+every table, its keys, and the relationships between them across Phase 1
+(Ball-by-Ball Match Engine) and Phase 2 (Historical World Cup Tournament Universe).
 
 Design principles: normalized (no giant denormalized delivery blob), loss-aware
 (source detail preserved), and query-friendly (common joins stay simple).
@@ -15,12 +16,19 @@ relationship; enable enforcement at read time with `PRAGMA foreign_keys = ON`.
 ```text
 events ─┐
 teams ──┼──< matches >──┬── match_dates
-        │               ├── match_players >── players
-        │               ├── match_officials
-        │               └── innings ──< overs ──< deliveries ─┬── delivery_extras
-        │                     │                                ├── delivery_wickets ──< wicket_fielders
-        └─────────────────────┘ (batting team)                │      │
-        deliveries.batter_id / non_striker_id / bowler_id ─────┘      └── player_out_id → players
+  │     │               ├── match_players >── players ──┐
+  │     │               ├── match_officials             │
+  │     │               └── innings ──< overs ──< deliveries ─┬── delivery_extras
+  │     │                     │                                ├── delivery_wickets ──< wicket_fielders
+  │     └─────────────────────┘ (batting team)                │      │
+  │     deliveries.batter_id / non_striker_id / bowler_id ─────┘      └── player_out_id → players
+  │
+  │   Phase 2 (World Cup Universe):
+  ├───< tournament_teams >── tournaments
+  │                                │
+  └───< tournament_squads >────────┘
+              │
+              └────────────────────────────────────────> players
 ```
 
 ## Tables
@@ -145,6 +153,34 @@ where possible; substitutes keep only `fielder_name` (with `fielder_id` NULL).
 - **PK**: `wicket_fielder_id` · **FKs**: `wicket_id`→delivery_wickets,
   `fielder_id`→players (nullable)
 
+## Phase 2: World Cup Universe Tables
+
+### `tournaments`
+
+All 22 historical ICC World Cup editions (13 ODI + 9 Men's T20 World Cups).
+
+- **PK**: `tournament_id` (e.g. `ODI_WC_1975`, `T20_WC_2007`)
+- Columns: `year`, `format` (`ODI` | `T20`), `name`, `display_name`,
+  `edition_number`, `status` (`completed`), `source` (`cricsheet` | `wikipedia` | `manual`)
+
+### `tournament_teams`
+
+Participating teams for each World Cup edition, mapped to canonical team IDs.
+
+- **PK**: (`tournament_id`, `team_id`)
+- Columns: `team_name`, `source`, `source_reference`
+- **FKs**: `tournament_id`→tournaments, `team_id`→teams
+
+### `tournament_squads`
+
+Curated 15-player tournament squads for each participating nation, linked to canonical player identities.
+
+- **PK**: (`tournament_id`, `team_id`, `player_id`)
+- Columns: `role` (`BAT` | `BOWL` | `ALLROUNDER` | `WK`), `wicketkeeper` (0/1),
+  `participated` (0/1), `squad_order`, `source`, `source_reference`,
+  `source_notes`, `original_player_name`, `original_team_name`
+- **FKs**: `tournament_id`→tournaments, `team_id`→teams, `player_id`→players
+
 ## Indexes
 
 Created after bulk load for speed. Rationale:
@@ -160,11 +196,15 @@ Created after bulk load for speed. Rationale:
 | `deliveries(over_id)`                                                                                                            | an over's deliveries (score reconstruction)                      |
 | `deliveries(batter_id)`, `deliveries(non_striker_id)`, `deliveries(bowler_id)`                                                   | per-player batting/bowling scans                                 |
 | `delivery_extras(delivery_id)`, `delivery_wickets(delivery_id)`, `delivery_wickets(player_out_id)`, `wicket_fielders(wicket_id)` | join child rows back to deliveries; dismissals by player         |
+| `tournament_teams(tournament_id)`, `tournament_teams(team_id)`                                                                   | Phase 2: tournament team lookups                                 |
+| `tournament_squads(tournament_id)`, `tournament_squads(team_id)`, `tournament_squads(player_id)`                                 | Phase 2: tournament squad lookups by edition, team, or player    |
 
 (UNIQUE constraints also create supporting indexes, e.g. `match_players(match_id,
 player_id)`.)
 
-## Example query
+## Example queries
+
+### Phase 1: Recent Matches
 
 ```sql
 SELECT m.match_id, m.start_date, t1.display_name, t2.display_name, m.result_text
@@ -174,6 +214,23 @@ JOIN teams t2 ON m.team_2_id = t2.team_id
 WHERE m.format = 'ODI'
 ORDER BY m.start_date DESC
 LIMIT 10;
+```
+
+### Phase 2: Tournament Squad Query
+
+```sql
+SELECT
+    t.display_name AS tournament,
+    tm.display_name AS team,
+    p.display_name AS player,
+    ts.role,
+    ts.wicketkeeper
+FROM tournament_squads ts
+JOIN tournaments t ON ts.tournament_id = t.tournament_id
+JOIN teams tm ON ts.team_id = tm.team_id
+JOIN players p ON ts.player_id = p.player_id
+WHERE t.format = 'ODI' AND t.year = 2011 AND tm.display_name = 'India'
+ORDER BY ts.squad_order;
 ```
 
 See [`cricsheet-mapping.md`](cricsheet-mapping.md) for the JSON→column mapping.

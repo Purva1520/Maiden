@@ -109,9 +109,9 @@ def main(argv: list[str] | None = None) -> int:
         stats = builder.build(tournaments, teams, squads)
         logger.info(
             "Built %d tournaments, %d teams, %d squad entries",
-            stats.tournaments_loaded,
-            stats.teams_loaded,
-            stats.squad_entries_loaded,
+            stats.tournaments,
+            stats.tournament_teams,
+            stats.squad_records,
         )
 
         # --- Generate report ---

@@ -6,8 +6,8 @@ is planned scope, not existing functionality.
 | Phase | Name                              | Status         |
 | ----- | --------------------------------- | -------------- |
 | 0     | Project Foundation                | ✅ Done        |
-| 1     | Cricsheet Data Pipeline           | ✅ **Current** |
-| 2     | Historical World Cup Database     | Planned        |
+| 1     | Cricsheet Data Pipeline           | ✅ Done        |
+| 2     | Historical World Cup Database     | ✅ Done        |
 | 3     | Player Identity & Normalization   | Planned        |
 | 4     | Tournament Statistics & Era Norm. | Planned        |
 | 5     | Maiden Rating System              | Planned        |
@@ -25,15 +25,23 @@ is planned scope, not existing functionality.
 Establishes the monorepo, toolchain, package boundaries, testing, linting,
 formatting, environment configuration, documentation and CI scaffolding.
 
-## Phase 1 — Cricsheet Data Pipeline (current)
+## Phase 1 — Cricsheet Data Pipeline (done)
 
 A reproducible Python pipeline that turns raw Cricsheet ODI/T20 male JSON
 archives into a normalized, validated SQLite database
 (`data/processed/maiden.sqlite`): ingest → parse → clean → validate → export,
-with human- and machine-readable ingestion reports. **No ratings, era
-normalization, World Cup squad curation, simulation, campaign or game UI is
-implemented** — those remain in later phases. See
+with human- and machine-readable ingestion reports. See
 [`data-schema.md`](data-schema.md) and [`cricsheet-mapping.md`](cricsheet-mapping.md).
+
+## Phase 2 — Historical World Cup Database (done)
+
+Curated World Cup tournament universe covering all 22 historical tournaments
+(13 ODI editions from 1975–2023, 9 Men's T20 editions from 2007–2024), 275
+participating tournament-team mappings, and complete 15-player tournament squads
+(3,341 squad records) with player roles, wicketkeeper designations, and participation
+flags. Loaded into `tournaments`, `tournament_teams`, and `tournament_squads` with
+full foreign key integrity, query API (`getSquad`, `get_tournament`, etc.),
+and automated validation reporting (`data/processed/world_cup_report.json`).
 
 ## Game vision (future)
 

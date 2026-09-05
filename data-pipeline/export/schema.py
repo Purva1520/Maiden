@@ -32,12 +32,75 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
         display_name   TEXT NOT NULL
     )
     """,
+    # -- Phase 3 canonical players ------------------------------------------
     """
     CREATE TABLE players (
-        player_id      INTEGER PRIMARY KEY,
-        registry_id    TEXT UNIQUE,          -- Cricsheet stable person id (nullable)
-        canonical_name TEXT NOT NULL,
-        display_name   TEXT NOT NULL
+        player_id      TEXT PRIMARY KEY,       -- deterministic slug e.g. 'sachin_tendulkar'
+        canonical_name TEXT NOT NULL,          -- formal preferred identity
+        display_name   TEXT NOT NULL,          -- UI display name
+        registry_id    TEXT UNIQUE,            -- Cricsheet person id (backward-compat)
+        cricsheet_id   TEXT UNIQUE,            -- Cricsheet stable person id (nullable)
+        country_id     TEXT,                   -- primary international country/team (nullable)
+        active_from    INTEGER,                -- earliest appearance year (nullable)
+        active_to      INTEGER                 -- latest appearance year (nullable)
+    )
+    """,
+    """
+    CREATE TABLE player_aliases (
+        alias_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        player_id        TEXT NOT NULL,
+        alias            TEXT NOT NULL,
+        normalized_alias TEXT NOT NULL,
+        source           TEXT NOT NULL,         -- cricsheet|wikipedia|manual
+        source_reference TEXT,
+        FOREIGN KEY (player_id) REFERENCES players (player_id)
+    )
+    """,
+    """
+    CREATE TABLE player_identifiers (
+        identifier_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+        player_id        TEXT NOT NULL,
+        identifier_type  TEXT NOT NULL,         -- cricsheet|cricinfo|bcci|etc.
+        identifier_value TEXT NOT NULL,
+        source           TEXT NOT NULL,
+        source_reference TEXT,
+        UNIQUE (identifier_type, identifier_value),
+        FOREIGN KEY (player_id) REFERENCES players (player_id)
+    )
+    """,
+    """
+    CREATE TABLE player_resolution_log (
+        record_id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        source              TEXT NOT NULL,
+        raw_name            TEXT NOT NULL,
+        normalized_name     TEXT NOT NULL,
+        candidate_player_id TEXT,
+        resolution_method   TEXT NOT NULL,     -- identifier|exact|alias|context|manual|unresolved
+        resolution_status   TEXT NOT NULL,     -- RESOLVED_* | REVIEW | UNRESOLVED
+        confidence          TEXT NOT NULL,     -- HIGH|MEDIUM|LOW|NONE
+        reason              TEXT,
+        reviewed            INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY (candidate_player_id) REFERENCES players (player_id)
+    )
+    """,
+    """
+    CREATE TABLE team_aliases (
+        alias_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        team_id          INTEGER NOT NULL,
+        alias            TEXT NOT NULL,
+        normalized_alias TEXT NOT NULL,
+        source           TEXT,
+        FOREIGN KEY (team_id) REFERENCES teams (team_id)
+    )
+    """,
+    """
+    CREATE TABLE tournament_aliases (
+        alias_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        tournament_id    TEXT NOT NULL,
+        alias            TEXT NOT NULL,
+        normalized_alias TEXT NOT NULL,
+        source           TEXT,
+        FOREIGN KEY (tournament_id) REFERENCES tournaments (tournament_id)
     )
     """,
     """
@@ -81,7 +144,7 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
         result_method        TEXT,               -- e.g. 'D/L'
         eliminator_winner_id INTEGER,
         result_text          TEXT,
-        player_of_match_id   INTEGER,
+        player_of_match_id   TEXT,
         data_version         TEXT,
         revision             INTEGER,
         created              TEXT,
@@ -108,7 +171,7 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
         match_player_id INTEGER PRIMARY KEY,
         match_id        TEXT NOT NULL,
         team_id         INTEGER NOT NULL,
-        player_id       INTEGER NOT NULL,
+        player_id       TEXT NOT NULL,
         playing_xi      INTEGER NOT NULL DEFAULT 1,  -- listed in the team's players
         UNIQUE (match_id, player_id),
         FOREIGN KEY (match_id)  REFERENCES matches (match_id),
@@ -120,18 +183,18 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
     CREATE TABLE match_officials (
         match_official_id INTEGER PRIMARY KEY,
         match_id          TEXT NOT NULL,
-        role              TEXT NOT NULL,        -- umpires|tv_umpires|reserve_umpires|match_referees
+        role              TEXT NOT NULL,        -- umpire|tv_umpire|match_referee|reserve_umpire
         official_name     TEXT NOT NULL,
-        official_order    INTEGER NOT NULL,
+        official_order    INTEGER NOT NULL,     -- 0-based within role
         FOREIGN KEY (match_id) REFERENCES matches (match_id)
     )
     """,
-    # -- innings / overs / deliveries --------------------------------------
+    # -- ball-by-ball (innings -> overs -> deliveries) ---------------------
     """
     CREATE TABLE innings (
         innings_id     INTEGER PRIMARY KEY,
         match_id       TEXT NOT NULL,
-        innings_number INTEGER NOT NULL,        -- 1-based order
+        innings_number INTEGER NOT NULL,        -- 1, 2, ...
         team_id        INTEGER NOT NULL,        -- batting team
         is_super_over  INTEGER NOT NULL DEFAULT 0,
         is_declared    INTEGER NOT NULL DEFAULT 0,
@@ -149,7 +212,7 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
     CREATE TABLE overs (
         over_id        INTEGER PRIMARY KEY,
         innings_id     INTEGER NOT NULL,
-        over_number    INTEGER NOT NULL,        -- 0-based (as Cricsheet records)
+        over_number    INTEGER NOT NULL,        -- 0-based: 0, 1, 2, ...
         delivery_count INTEGER NOT NULL,        -- deliveries recorded in this over
         UNIQUE (innings_id, over_number),
         FOREIGN KEY (innings_id) REFERENCES innings (innings_id)
@@ -160,9 +223,9 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
         delivery_id     INTEGER PRIMARY KEY,
         over_id         INTEGER NOT NULL,
         delivery_number INTEGER NOT NULL,       -- 0-based order within the over
-        batter_id       INTEGER NOT NULL,
-        non_striker_id  INTEGER NOT NULL,
-        bowler_id       INTEGER NOT NULL,
+        batter_id       TEXT NOT NULL,
+        non_striker_id  TEXT NOT NULL,
+        bowler_id       TEXT NOT NULL,
         batter_runs     INTEGER NOT NULL,
         extra_runs      INTEGER NOT NULL,
         total_runs      INTEGER NOT NULL,
@@ -189,7 +252,7 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
         wicket_id      INTEGER PRIMARY KEY,
         delivery_id    INTEGER NOT NULL,
         wicket_order   INTEGER NOT NULL,        -- 0-based (a delivery may have >1)
-        player_out_id  INTEGER NOT NULL,
+        player_out_id  TEXT NOT NULL,
         dismissal_kind TEXT NOT NULL,
         FOREIGN KEY (delivery_id)   REFERENCES deliveries (delivery_id),
         FOREIGN KEY (player_out_id) REFERENCES players (player_id)
@@ -199,7 +262,7 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
     CREATE TABLE wicket_fielders (
         wicket_fielder_id INTEGER PRIMARY KEY,
         wicket_id         INTEGER NOT NULL,
-        fielder_id        INTEGER,             -- NULL if unresolved (e.g. substitute)
+        fielder_id        TEXT,                -- NULL if unresolved (e.g. substitute)
         fielder_name      TEXT NOT NULL,
         is_substitute     INTEGER NOT NULL DEFAULT 0,
         fielder_order     INTEGER NOT NULL,
@@ -236,7 +299,7 @@ SCHEMA_STATEMENTS: tuple[str, ...] = (
     CREATE TABLE tournament_squads (
         tournament_id        TEXT NOT NULL,
         team_id              INTEGER NOT NULL,
-        player_id            INTEGER NOT NULL,
+        player_id            TEXT NOT NULL,
         role                 TEXT NOT NULL,         -- BAT|BOWL|ALLROUNDER|WK
         wicketkeeper         INTEGER NOT NULL,      -- 0/1
         participated         INTEGER NOT NULL,      -- 0/1
@@ -281,12 +344,30 @@ INDEX_STATEMENTS: tuple[str, ...] = (
     "CREATE INDEX idx_tournament_squads_tournament ON tournament_squads (tournament_id)",
     "CREATE INDEX idx_tournament_squads_player ON tournament_squads (player_id)",
     "CREATE INDEX idx_tournament_squads_team ON tournament_squads (team_id)",
+    # Phase 3
+    "CREATE INDEX idx_player_aliases_norm ON player_aliases (normalized_alias)",
+    "CREATE INDEX idx_player_aliases_player ON player_aliases (player_id)",
+    (
+        "CREATE INDEX idx_player_identifiers_lookup "
+        "ON player_identifiers (identifier_type, identifier_value)"
+    ),
+    "CREATE INDEX idx_player_identifiers_player ON player_identifiers (player_id)",
+    "CREATE INDEX idx_players_canonical ON players (canonical_name)",
+    "CREATE INDEX idx_players_cricsheet ON players (cricsheet_id)",
+    "CREATE INDEX idx_player_res_log_status ON player_resolution_log (resolution_status)",
+    "CREATE INDEX idx_team_aliases_norm ON team_aliases (normalized_alias)",
+    "CREATE INDEX idx_tournament_aliases_norm ON tournament_aliases (normalized_alias)",
 )
 
 TABLE_NAMES: tuple[str, ...] = (
     "pipeline_metadata",
     "teams",
     "players",
+    "player_aliases",
+    "player_identifiers",
+    "player_resolution_log",
+    "team_aliases",
+    "tournament_aliases",
     "events",
     "matches",
     "match_dates",
@@ -298,7 +379,6 @@ TABLE_NAMES: tuple[str, ...] = (
     "delivery_extras",
     "delivery_wickets",
     "wicket_fielders",
-    # Phase 2
     "tournaments",
     "tournament_teams",
     "tournament_squads",

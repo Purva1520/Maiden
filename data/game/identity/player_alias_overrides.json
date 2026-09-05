@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "description": "Manual human-adjudicated player identity overrides for ambiguous or exceptional historical cases.",
+  "overrides": {
+    "Sachin Tendulkar": {
+      "player_id": "sachin_tendulkar",
+      "canonical_name": "Sachin Tendulkar",
+      "reason": "Canonical identity for Sachin Tendulkar"
+    },
+    "SR Tendulkar": {
+      "player_id": "sachin_tendulkar",
+      "canonical_name": "Sachin Tendulkar",
+      "reason": "Cricsheet display abbreviation for Sachin Tendulkar"
+    },
+    "S Tendulkar": {
+      "player_id": "sachin_tendulkar",
+      "canonical_name": "Sachin Tendulkar",
+      "reason": "Single initial variant for Sachin Tendulkar"
+    },
+    "S. Tendulkar": {
+      "player_id": "sachin_tendulkar",
+      "canonical_name": "Sachin Tendulkar",
+      "reason": "Dotted initial variant for Sachin Tendulkar"
+    },
+    "Sachin R Tendulkar": {
+      "player_id": "sachin_tendulkar",
+      "canonical_name": "Sachin Tendulkar",
+      "reason": "Middle initial variant for Sachin Tendulkar"
+    },
+    "MS Dhoni": {
+      "player_id": "ms_dhoni",
+      "canonical_name": "MS Dhoni",
+      "reason": "Canonical identity for Mahendra Singh Dhoni"
+    },
+    "M.S. Dhoni": {
+      "player_id": "ms_dhoni",
+      "canonical_name": "MS Dhoni",
+      "reason": "Punctuation variant for MS Dhoni"
+    },
+    "Virat Kohli": {
+      "player_id": "virat_kohli",
+      "canonical_name": "Virat Kohli",
+      "reason": "Canonical identity for Virat Kohli"
+    },
+    "V Kohli": {
+      "player_id": "virat_kohli",
+      "canonical_name": "Virat Kohli",
+      "reason": "Initial variant for Virat Kohli"
+    },
+    "Ricky Ponting": {
+      "player_id": "ricky_ponting",
+      "canonical_name": "Ricky Ponting",
+      "reason": "Canonical identity for Ricky Ponting"
+    },
+    "RT Ponting": {
+      "player_id": "ricky_ponting",
+      "canonical_name": "Ricky Ponting",
+      "reason": "Initial variant for Ricky Ponting"
+    },
+    "Glenn McGrath": {
+      "player_id": "glenn_mcgrath",
+      "canonical_name": "Glenn McGrath",
+      "reason": "Canonical identity for Glenn McGrath"
+    },
+    "GD McGrath": {
+      "player_id": "glenn_mcgrath",
+      "canonical_name": "Glenn McGrath",
+      "reason": "Initial variant for Glenn McGrath"
+    }
+  },
+  "contextual_overrides": [
+    {
+      "name": "A Khan",
+      "team": "Pakistan",
+      "year": 1996,
+      "player_id": "akram_khan",
+      "reason": "Disambiguated 1996 match appearance"
+    }
+  ]
+}

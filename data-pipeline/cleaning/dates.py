@@ -1,18 +1,31 @@
 """Date normalization.
 
-Cricsheet supplies ISO dates, but we normalize defensively to a stable
-``YYYY-MM-DD`` representation and never assume a match has exactly one date.
+Normalizes single and multi-date representations into stable ISO ``YYYY-MM-DD``
+strings without relying on locale-dependent or ambiguous parsing.
 """
 
 from __future__ import annotations
 
 from datetime import date, datetime
 
-_ACCEPTED_FORMATS = ("%Y-%m-%d", "%Y/%m/%d", "%d-%m-%Y", "%d/%m/%Y")
+_ACCEPTED_FORMATS = (
+    "%Y-%m-%d",
+    "%Y/%m/%d",
+    "%d-%m-%Y",
+    "%d/%m/%Y",
+    "%d %b %Y",
+    "%d %B %Y",
+    "%d-%b-%Y",
+    "%d-%B-%Y",
+    "%b %d, %Y",
+    "%B %d, %Y",
+    "%b %d %Y",
+    "%B %d %Y",
+)
 
 
 def normalize_date(value: object) -> str | None:
-    """Return a ``YYYY-MM-DD`` string, or None if the value can't be parsed."""
+    """Return a canonical ``YYYY-MM-DD`` string, or None if the value cannot be parsed."""
     if value is None:
         return None
     if isinstance(value, (datetime, date)):

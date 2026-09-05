@@ -7,18 +7,14 @@ World Cup editions, draft a Playing XI from the players who actually featured in
 those tournaments, and simulate complete matches ball-by-ball — then try to go
 **Invincible** across a campaign.
 
-> **Current phase: Phase 1 — Cricsheet Data Pipeline.**
-> A reproducible Python pipeline turns raw Cricsheet archives into a normalized
-> SQLite database:
+> **Current phase: Phase 2 — Historical World Cup Database (Complete).**
+> Phase 1 (Cricsheet Data Pipeline) and Phase 2 (Curated World Cup Universe) are
+> fully implemented. All 22 historical ODI and T20 World Cups, 275 tournament-team
+> mappings, and 3,341 curated squad records are normalized and validated in
+> `data/processed/maiden.sqlite`.
 >
-> ```text
-> Raw Cricsheet archives → Python ingestion pipeline → SQLite normalized database
-> (odis_male_json.zip,      (ingest → parse → clean →   (data/processed/maiden.sqlite)
->  t20s_male_json.zip)       validate → export)
-> ```
->
-> Gameplay, simulation, ratings, World Cup squad curation and the game UI are
-> **not implemented yet**. See [`docs/roadmap.md`](docs/roadmap.md).
+> Player ratings, simulation engine, campaign mode, and frontend follow in
+> subsequent phases. See [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Tech stack
 
@@ -86,11 +82,24 @@ The pipeline produces `data/processed/maiden.sqlite` plus `ingestion_report.json
 / `ingestion_report.txt`. See [`docs/data-schema.md`](docs/data-schema.md) and
 [`docs/cricsheet-mapping.md`](docs/cricsheet-mapping.md).
 
+### World Cup database (Phase 2)
+
+```bash
+python scripts/generate_world_cup_data.py   # generate curated JSON datasets
+python scripts/build_world_cup_database.py  # load tournaments, teams, squads into DB
+python scripts/validate_world_cups.py       # validate DB integrity & report
+```
+
+The World Cup pipeline updates `data/processed/maiden.sqlite` with the 22 tournaments,
+275 teams, and 3,341 squad records, and produces `data/processed/world_cup_report.json`
+/ `world_cup_report.txt`.
+
 ## Roadmap
 
-Phase 0 established the project foundation; Phase 1 adds the Cricsheet data
-pipeline. The full phase plan (historical database, rating system, simulation
-engine, campaign, frontend) is in [`docs/roadmap.md`](docs/roadmap.md).
+Phase 0 established the project foundation, Phase 1 delivered the Cricsheet match
+pipeline, and Phase 2 delivered the historical World Cup database. The full phase
+plan (identity resolution, ratings, simulation engine, campaign, frontend) is in
+[`docs/roadmap.md`](docs/roadmap.md).
 
 ## Data attribution
 

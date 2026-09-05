@@ -14,8 +14,15 @@ import json
 import sqlite3
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
-from cleaning.names import normalize_person_name, normalize_team_name
+from cleaning.names import (
+    generate_player_id,
+    normalize_name_for_matching,
+    normalize_person_name,
+    normalize_team_name,
+)
+from cleaning.teams import get_canonical_team_aliases
 from core import config
 from core.logging_setup import get_logger
 
@@ -190,19 +197,19 @@ class WorldCupBuildStats:
 
 
 class WorldCupBuilder:
-    """Write Phase 2 tables into an existing ``maiden.sqlite``."""
+    """Write Phase 2 and Phase 3 tables into an existing ``maiden.sqlite``."""
 
-    def __init__(self, conn: sqlite3.Connection) -> None:
+    def __init__(self, conn: sqlite3.Connection, resolver: Any | None = None) -> None:
         self.conn = conn
+        self.resolver = resolver
         self.stats = WorldCupBuildStats()
         self._team_cache: dict[str, int] = {}  # lower(canonical) -> team_id
-        self._player_cache: dict[str, int] = {}  # lower(canonical) -> player_id
+        self._player_cache: dict[str, str] = {}  # lower(canonical) -> player_id string
         self._next_team_id: int = 1
-        self._next_player_id: int = 1
 
     # -- entity resolution ---------------------------------------------------
     def _load_existing_entities(self) -> None:
-        """Cache teams/players already present from Phase 1."""
+        """Cache teams/players already present."""
         try:
             rows = self.conn.execute("SELECT team_id, canonical_name FROM teams").fetchall()
             for tid, name in rows:
@@ -215,9 +222,7 @@ class WorldCupBuilder:
         try:
             rows = self.conn.execute("SELECT player_id, canonical_name FROM players").fetchall()
             for pid, name in rows:
-                self._player_cache[name.lower()] = pid
-            if rows:
-                self._next_player_id = max(pid for pid, _ in rows) + 1
+                self._player_cache[name.lower()] = str(pid)
         except sqlite3.OperationalError:
             pass  # players table doesn't exist yet
 
@@ -237,23 +242,109 @@ class WorldCupBuilder:
         )
         self._team_cache[key] = tid
         self.stats.new_teams_created += 1
+
+        # Add aliases into team_aliases
+        for alias, canon in get_canonical_team_aliases().items():
+            if canon.lower() == canonical.lower():
+                try:
+                    self.conn.execute(
+                        "INSERT INTO team_aliases (team_id, alias, normalized_alias, source) "
+                        "VALUES (?, ?, ?, ?)",
+                        (tid, alias, alias.lower(), "canonical_alias"),
+                    )
+                except sqlite3.OperationalError:
+                    pass
+
         logger.debug("Created new team: [%d] %s", tid, canonical)
         return tid
 
-    def _resolve_player(self, player_name: str) -> int:
+    def _resolve_player(
+        self,
+        player_name: str,
+        team: str | None = None,
+        year: int | None = None,
+        fmt: str | None = None,
+        source: str = "wikipedia",
+        source_ref: str | None = None,
+    ) -> str:
         """Find or create a player record, return its ``player_id``."""
         canonical = normalize_person_name(player_name)
         key = canonical.lower()
         pid = self._player_cache.get(key)
         if pid is not None:
             return pid
-        pid = self._next_player_id
-        self._next_player_id += 1
+
+        if self.resolver:
+            res = self.resolver.resolve(
+                player_name,
+                team=team,
+                year=year,
+                format=fmt,
+                source=source,
+                source_ref=source_ref,
+            )
+            if res.player:
+                pid = res.player.player_id
+                self.conn.execute(
+                    "INSERT OR IGNORE INTO players ("
+                    "player_id, canonical_name, display_name, cricsheet_id, country_id, "
+                    "active_from, active_to) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        pid,
+                        res.player.canonical_name,
+                        res.player.display_name,
+                        res.player.cricsheet_id,
+                        res.player.country_id or team,
+                        res.player.active_from or year,
+                        res.player.active_to or year,
+                    ),
+                )
+                # Record alias
+                try:
+                    self.conn.execute(
+                        "INSERT INTO player_aliases ("
+                        "player_id, alias, normalized_alias, source, source_reference) "
+                        "VALUES (?, ?, ?, ?, ?)",
+                        (
+                            pid,
+                            player_name,
+                            normalize_name_for_matching(player_name),
+                            source,
+                            source_ref,
+                        ),
+                    )
+                except sqlite3.OperationalError:
+                    pass
+
+                self._player_cache[key] = pid
+                return pid
+
+        # Fallback slug generator
+        pid = generate_player_id(canonical)
         self.conn.execute(
-            "INSERT INTO players (player_id, registry_id, canonical_name, display_name) "
-            "VALUES (?, ?, ?, ?)",
-            (pid, None, canonical, canonical),
+            "INSERT OR IGNORE INTO players ("
+            "player_id, canonical_name, display_name, cricsheet_id, country_id, "
+            "active_from, active_to) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (pid, canonical, canonical, None, team, year, year),
         )
+        try:
+            self.conn.execute(
+                "INSERT INTO player_aliases ("
+                "player_id, alias, normalized_alias, source, source_reference) "
+                "VALUES (?, ?, ?, ?, ?)",
+                (
+                    pid,
+                    player_name,
+                    normalize_name_for_matching(player_name),
+                    source,
+                    source_ref,
+                ),
+            )
+        except sqlite3.OperationalError:
+            pass
+
         self._player_cache[key] = pid
         self.stats.new_players_created += 1
         return pid
@@ -265,12 +356,15 @@ class WorldCupBuilder:
         teams: list[dict],
         squads: list[dict],
     ) -> WorldCupBuildStats:
-        """Write all Phase 2 data into the database (idempotent)."""
+        """Write all Phase 2 and Phase 3 data into the database (idempotent)."""
         self._load_existing_entities()
 
         # Clear existing Phase 2 data for idempotent rebuild
-        for table in ("tournament_squads", "tournament_teams", "tournaments"):
-            self.conn.execute(f"DELETE FROM {table}")
+        for table in ("tournament_squads", "tournament_teams", "tournaments", "tournament_aliases"):
+            try:
+                self.conn.execute(f"DELETE FROM {table}")
+            except sqlite3.OperationalError:
+                pass
         self.conn.commit()
 
         # --- tournaments ---
@@ -290,6 +384,20 @@ class WorldCupBuilder:
                     t["source"],
                 ),
             )
+            try:
+                self.conn.execute(
+                    "INSERT INTO tournament_aliases ("
+                    "tournament_id, alias, normalized_alias, source) "
+                    "VALUES (?, ?, ?, ?)",
+                    (
+                        t["tournament_id"],
+                        t["display_name"],
+                        t["display_name"].lower(),
+                        "display_name",
+                    ),
+                )
+            except sqlite3.OperationalError:
+                pass
             self.stats.tournaments += 1
 
         # --- tournament_teams ---
@@ -312,7 +420,14 @@ class WorldCupBuilder:
         # --- tournament_squads ---
         for s in squads:
             team_id = self._resolve_team(s["team"])
-            player_id = self._resolve_player(s["player"])
+            player_id = self._resolve_player(
+                s["player"],
+                team=s["team"],
+                year=s["year"],
+                fmt=s["format"],
+                source=s.get("source", "wikipedia"),
+                source_ref=s.get("source_reference"),
+            )
             self.conn.execute(
                 "INSERT INTO tournament_squads "
                 "(tournament_id, team_id, player_id, role, wicketkeeper, participated, "
