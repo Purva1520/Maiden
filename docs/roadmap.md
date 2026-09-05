@@ -9,8 +9,8 @@ is planned scope, not existing functionality.
 | 1     | Cricsheet Data Pipeline           | ✅ Done |
 | 2     | Historical World Cup Database     | ✅ Done |
 | 3     | Player Identity & Normalization   | ✅ Done |
-| 4     | Tournament Statistics & Era Norm. | ⏭️ Next |
-| 5     | Maiden Rating System              | Planned |
+| 4     | Tournament Statistics & Era Norm. | ✅ Done |
+| 5     | Maiden Rating System              | ⏭️ Next |
 | 6     | Cricket Simulation Engine         | Planned |
 | 7     | Simulation Calibration            | Planned |
 | 8     | XI Builder & Game Rules           | Planned |
@@ -52,11 +52,22 @@ queue. Conservative resolution hierarchy (override → identifier → exact → 
 context → REVIEW) that never force-merges ambiguous names. Also normalizes teams,
 tournaments, dates, and roles. See [`player-identity.md`](player-identity.md).
 
-## Phase 4 — Tournament Statistics & Era Normalization (next)
+## Phase 4 — Tournament Statistics & Era Normalization (done)
 
-Not started. Will compute per-tournament batting/bowling statistics from the
-canonical match data and normalize them across eras. Builds on the Phase 3
-canonical identities.
+Reproducible statistics pipeline producing `player_tournament_stats.parquet`
+(one row per player × tournament × team) with raw batting/bowling figures,
+null-aware derived metrics, participation/coverage/sample metadata, and
+tournament- and era-relative normalized features (percentile + z, direction-
+corrected). Also persists `tournament_baselines.parquet` and
+`era_baselines.parquet`. Raw and normalized values are kept side by side and
+missing data is never imputed. See
+[`statistical-methodology.md`](statistical-methodology.md) and
+[`tournament-statistics.md`](tournament-statistics.md). No Maiden ratings yet.
+
+## Phase 5 — Maiden Rating System (next)
+
+Not started. Will transform the Phase 4 normalized features into Maiden batting
+and bowling ratings.
 
 ## Game vision (future)
 

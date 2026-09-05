@@ -97,12 +97,16 @@ def run_demo() -> int:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Maiden Data Normalization Utility.")
-    parser.add_argument("--demo", action="store_true", help="Run comprehensive demo of all normalizations")
+    parser.add_argument(
+        "--demo", action="store_true", help="Run comprehensive demo of all normalizations"
+    )
     parser.add_argument("--role", help="Normalize a player role string")
     parser.add_argument("--team", help="Normalize a team name or abbreviation")
     parser.add_argument("--date", help="Normalize a date string")
     parser.add_argument("--name", help="Normalize a player name and produce ID slug")
-    parser.add_argument("--tournament", help="Normalize a tournament name (requires --year and --format)")
+    parser.add_argument(
+        "--tournament", help="Normalize a tournament name (requires --year and --format)"
+    )
     parser.add_argument("--year", type=int, help="Tournament year")
     parser.add_argument("--format", help="Tournament format (ODI or T20)")
 
@@ -118,7 +122,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.date:
         print(f"Date: {args.date!r} -> {normalize_date(args.date)}")
     if args.name:
-        print(f"Name: {args.name!r} -> norm: {normalize_name_for_matching(args.name)} slug: {generate_player_id(args.name)}")
+        print(
+            f"Name: {args.name!r} -> norm: {normalize_name_for_matching(args.name)} slug: {generate_player_id(args.name)}"
+        )
     if args.tournament:
         if not args.year or not args.format:
             print("Error: --tournament requires --year and --format")

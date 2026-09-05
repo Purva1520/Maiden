@@ -45,6 +45,16 @@ WORLD_CUP_DIR = GAME_DIR / "world_cups"
 WORLD_CUP_REPORT_JSON = PROCESSED_DIR / "world_cup_report.json"
 WORLD_CUP_REPORT_TXT = PROCESSED_DIR / "world_cup_report.txt"
 
+# Phase 4: tournament statistics & era normalization outputs
+STATS_PARQUET = PROCESSED_DIR / "player_tournament_stats.parquet"
+TOURNAMENT_BASELINES_PARQUET = PROCESSED_DIR / "tournament_baselines.parquet"
+ERA_BASELINES_PARQUET = PROCESSED_DIR / "era_baselines.parquet"
+STATS_REPORT_JSON = PROCESSED_DIR / "tournament_stats_report.json"
+STATS_REPORT_TXT = PROCESSED_DIR / "tournament_stats_report.txt"
+STATS_MANIFEST = PROCESSED_DIR / "tournament_stats_manifest.json"
+STATS_REVIEW_JSON = PROCESSED_DIR / "tournament_stats_review.json"
+FEATURE_DICTIONARY = PROCESSED_DIR / "feature_dictionary.json"
+
 # ---------------------------------------------------------------------------
 # Format canonicalization
 # ---------------------------------------------------------------------------

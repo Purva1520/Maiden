@@ -7,17 +7,17 @@ World Cup editions, draft a Playing XI from the players who actually featured in
 those tournaments, and simulate complete matches ball-by-ball — then try to go
 **Invincible** across a campaign.
 
-> **Current phase: Phase 3 — Player Identity & Normalization (Complete).**
-> Phase 1 (Cricsheet pipeline), Phase 2 (22-edition World Cup universe), and
-> Phase 3 (canonical player identity/entity resolution) are implemented. Every
-> player reference across matches, deliveries, and tournament squads resolves to a
-> stable canonical `player_id` in `data/processed/maiden.sqlite`. **Phase 4
-> (Tournament Statistics & Era Normalization) is next.**
+> **Current phase: Phase 4 — Tournament Statistics & Era Normalization (Complete).**
+> Phases 1–3 build a canonical `maiden.sqlite` (matches, World Cup universe,
+> player identities). Phase 4 adds a reproducible statistics pipeline producing
+> `data/processed/player_tournament_stats.parquet` — raw + null-aware derived
+> batting/bowling figures with tournament- and era-relative normalized features,
+> plus persisted baselines. **Phase 5 (Maiden Rating System) is next.**
 >
-> Player ratings, simulation engine, campaign mode, and frontend follow in
-> subsequent phases. See [`docs/roadmap.md`](docs/roadmap.md),
-> [`docs/world-cup-data.md`](docs/world-cup-data.md), and
-> [`docs/player-identity.md`](docs/player-identity.md).
+> Ratings, simulation engine, campaign mode, and frontend follow in subsequent
+> phases. See [`docs/roadmap.md`](docs/roadmap.md),
+> [`docs/statistical-methodology.md`](docs/statistical-methodology.md), and
+> [`docs/tournament-statistics.md`](docs/tournament-statistics.md).
 
 ## Tech stack
 
@@ -107,6 +107,15 @@ python scripts/validate_identity.py          # FK + identity integrity checks
 
 See [`docs/player-identity.md`](docs/player-identity.md).
 
+### Tournament statistics (Phase 4)
+
+```bash
+python scripts/build_tournament_stats.py     # -> player_tournament_stats.parquet + baselines
+python scripts/validate_tournament_stats.py  # validate outputs & reconciliation
+```
+
+See [`docs/statistical-methodology.md`](docs/statistical-methodology.md).
+
 ### Full build order
 
 The database is built in sequence — **run these in order** (each builds on the
@@ -117,9 +126,11 @@ python scripts/download_cricsheet.py         # 1. fetch Cricsheet archives (once
 python scripts/build_database.py             # 2. Phase 1: matches/deliveries
 python scripts/build_world_cup_database.py   # 3. Phase 2: World Cup universe
 python scripts/resolve_players.py            # 4. Phase 3: canonical identities
+python scripts/build_tournament_stats.py     # 5. Phase 4: statistics parquet
 ```
 
-Then `validate_world_cups.py` + `validate_identity.py` to verify.
+Then `validate_world_cups.py`, `validate_identity.py`, and
+`validate_tournament_stats.py` to verify.
 
 ## Roadmap
 

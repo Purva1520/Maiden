@@ -234,3 +234,17 @@ ORDER BY ts.squad_order;
 ```
 
 See [`cricsheet-mapping.md`](cricsheet-mapping.md) for the JSON→column mapping.
+
+## Phase 4 analytical outputs (Parquet, not SQLite)
+
+Phase 4 derives analytical datasets **from** `maiden.sqlite` into Parquet under
+`data/processed/` — they are not tables in the SQLite database:
+
+- `player_tournament_stats.parquet` — one row per player × tournament × team
+  (raw + derived + normalized batting/bowling; see the generated
+  `feature_dictionary.json`).
+- `tournament_baselines.parquet` / `era_baselines.parquet` — persisted metric
+  distributions used for normalization.
+
+Definitions and formulas: [`statistical-methodology.md`](statistical-methodology.md);
+consumption guide: [`tournament-statistics.md`](tournament-statistics.md).
