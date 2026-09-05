@@ -67,6 +67,16 @@ Full instructions: [`docs/development.md`](docs/development.md).
 
 ## Playing Maiden (frontend)
 
+**Quickest start** — one command that installs, launches web + API, and opens the
+browser:
+
+```bash
+./start.sh      # macOS / Linux
+start.bat       # Windows (double-click or run in a terminal)
+```
+
+Or manually:
+
 ```bash
 pnpm install
 pnpm dev          # web on :5173, API on :3000
