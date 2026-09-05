@@ -87,7 +87,7 @@ Opponents are selected from canonical World Cup squads (`curated_squads.json`). 
    - At least 5 viable bowling options (`role === 'BOWL' | 'ALLROUNDER'` or `bowlRating >= 30`).
    - At least 2 top-order capable players (`role === 'BAT' | 'WK'`).
    - Deduplicated by canonical player identity (`playerId`).
-4. Opponent XIs are adapted to engine-compatible `SimulatorTeam` structures with ratings mapped from Phase 5 player cards.
+4. Opponent XIs are adapted to engine-compatible `SimulatorTeam` structures with ratings mapped from Phase 5 player cards. Ratings are attached via the same `(tournamentId, team)` surname + first-initial bridge used for the user pool (`team/ratings.ts`), so opponent difficulty emerges from real historical player ratings rather than uniform role defaults. Pre-~2000 editions have no Phase 5 ratings (no ball-by-ball source data) and fall back to role-based ratings — see [team-building.md](team-building.md#3-player-pool--historical-card-identity).
 
 ---
 
@@ -96,6 +96,7 @@ Opponents are selected from canonical World Cup squads (`curated_squads.json`). 
 - **Circle Method Scheduling**: Generates the 28 group fixtures ensuring no team plays twice in the same round, no duplicate head-to-head fixtures occur, and the user faces all 7 opponents across rounds 1 to 7.
 - **Deterministic Match Seeds**: Every fixture receives a deterministic seed derived from the campaign seed, match number, and stage via `deriveMatchSeed()`.
 - **Authentic Background Simulation**: All matches—both user matches and concurrent background matches—are simulated using the Phase 6/7 `simulateMatch()` engine. No scores or standings are fabricated.
+- **Calibrated Engine**: Match execution loads the Phase 7 calibrated config (`simulation_config_v1.json` via `team/simConfig.ts`), so campaign scores follow the calibrated ODI/T20 distributions. Each `CampaignMatchRecord` preserves the `simulationVersion` and `configVersion` used, so future engine changes do not silently reinterpret old campaigns.
 
 ---
 

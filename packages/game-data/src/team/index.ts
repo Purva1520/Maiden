@@ -5,5 +5,7 @@ export * from './battingOrder.js';
 export * from './formation.js';
 export * from './xiValidator.js';
 export * from './squadBuilder.js';
+export * from './ratings.js';
 export * from './adapter.js';
+export * from './simConfig.js';
 export * from './gameState.js';

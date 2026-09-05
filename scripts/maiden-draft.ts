@@ -7,7 +7,13 @@
  *   npx tsx scripts/maiden-draft.ts --format ODI --seed 849273
  *   npx tsx scripts/maiden-draft.ts --format T20 --seed 54321
  */
-import { australiaXI, formatOvers, simulateMatch } from '../packages/simulator/src/index.js';
+import {
+  australiaXI,
+  formatOvers,
+  simulateDelivery,
+  simulateMatch,
+} from '../packages/simulator/src/index.js';
+import { loadCalibratedConfig } from '../team/simConfig.js';
 import {
   createGame,
   finalizeXI,
@@ -196,12 +202,16 @@ function main(): void {
   console.log(`Simulating match between [${team.name}] and [${australiaXI.name}]...\n`);
 
   const simTeam = toSimulatorTeam(team);
-  const matchResult = simulateMatch({
-    format,
-    teamA: simTeam,
-    teamB: australiaXI,
-    seed: seed + 100,
-  });
+  const matchResult = simulateMatch(
+    {
+      format,
+      teamA: simTeam,
+      teamB: australiaXI,
+      seed: seed + 100,
+    },
+    simulateDelivery,
+    loadCalibratedConfig(),
+  );
 
   console.log(
     `TOSS: ${matchResult.toss.winnerName} won the toss and elected to ${matchResult.toss.decision}.\n`,

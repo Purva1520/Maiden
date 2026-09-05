@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { SeededRandom } from '@maiden/simulator';
+import { resolveCardRating } from './ratings.js';
 import type {
   CricketFormat,
   HistoricalTeamReference,
@@ -55,23 +56,9 @@ interface RawTournamentEntry {
   display_name: string;
 }
 
-interface RawRatingEntry {
-  playerId: string | number;
-  player: string;
-  format: string;
-  tournamentId: string;
-  year: number;
-  team: string;
-  role: string;
-  batRating: number | null;
-  bowlRating: number | null;
-}
-
 let cachedSquads: RawSquadEntry[] | null = null;
 let cachedTeams: RawTeamEntry[] | null = null;
 let cachedTournaments: RawTournamentEntry[] | null = null;
-let cachedRatings: Map<string, { batRating: number | null; bowlRating: number | null }> | null =
-  null;
 
 function findProjectRoot(): string {
   let curr = process.cwd();
@@ -111,21 +98,6 @@ export function loadWorldCupData(): {
   cachedSquads = JSON.parse(fs.readFileSync(squadsPath, 'utf-8'));
   cachedTeams = JSON.parse(fs.readFileSync(teamsPath, 'utf-8'));
   cachedTournaments = JSON.parse(fs.readFileSync(tournamentsPath, 'utf-8'));
-
-  // Try loading ratings_v1.json if it exists
-  const ratingsPath = path.join(root, 'data', 'processed', 'ratings_v1.json');
-  cachedRatings = new Map();
-  if (fs.existsSync(ratingsPath)) {
-    try {
-      const list: RawRatingEntry[] = JSON.parse(fs.readFileSync(ratingsPath, 'utf-8'));
-      for (const r of list) {
-        const key = `${slugifyPlayerName(r.player)}__${r.tournamentId}`;
-        cachedRatings.set(key, { batRating: r.batRating, bowlRating: r.bowlRating });
-      }
-    } catch {
-      // Ignore rating parse errors, fallback to null
-    }
-  }
 
   return {
     squads: cachedSquads!,
@@ -253,14 +225,9 @@ export function buildPlayerPool(
     const cardId = `${playerId}__${s.tournament_id}`;
     const role = (s.role.toUpperCase() as PlayerRole) || 'BAT';
 
-    let batRating: number | null = null;
-    let bowlRating: number | null = null;
-
-    if (cachedRatings && cachedRatings.has(cardId)) {
-      const r = cachedRatings.get(cardId)!;
-      batRating = r.batRating;
-      bowlRating = r.bowlRating;
-    }
+    const rating = resolveCardRating(s.tournament_id, s.team, s.player);
+    const batRating = rating?.batRating ?? null;
+    const bowlRating = rating?.bowlRating ?? null;
 
     cards.push({
       playerId,

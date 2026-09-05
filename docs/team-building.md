@@ -94,6 +94,12 @@ A user may only select **one card per canonical real-world player** in a final X
 
 By default, all canonical squad members of rolled teams belong to the pool (`participated` flag preserved for metadata).
 
+### Rating Attachment (`team/ratings.ts`)
+
+Each card's `batRating` / `bowlRating` come from the Phase 5 ratings (`data/processed/ratings_v1.json`). The curated squads store full display names ("David Warner") while the ratings store Cricsheet scorecard names ("DA Warner"), so ratings are joined **within each `(tournamentId, team)` group** by surname + first initial (`resolveCardRating`), not by a naive full-name slug. This recovers ~98% of cards to a rating row and every available non-null rating (a bare slug join reached only ~12%). When no confident match exists, the card keeps `null` ratings and the simulator adapter applies role-based fallbacks.
+
+**Known limitation — pre-~2000 editions are unrated.** Phase 5 ratings derive from Cricsheet ball-by-ball data, which begins around 2000. Older World Cup editions (e.g. ODI 1975–1999) therefore have no non-null ratings even with a correct join, and those cards fall back to role-based ratings in the simulator. Rolls that land on early editions will show players as "unrated".
+
 ---
 
 ## 4. Playing XI Hard Constraints & Validation
@@ -204,3 +210,5 @@ The adapter ensures:
 - Rating fallbacks for unobserved skills so the simulator receives valid 0–99 ratings without crashing.
 - Bowlers are identified by `bowlRating: number`, and non-bowlers have `bowlRating: null`.
 - Engine independence is strictly preserved.
+
+The handoff loads the **calibrated** Phase 7 config (`data/game/simulation/simulation_config_v1.json` via `team/simConfig.ts`) and passes it to `simulateMatch`, so drafted and campaign matches run on the calibrated ODI/T20 model rather than the uncalibrated Phase 6 baseline. It falls back to `DEFAULT_SIMULATION_CONFIG` if the file is absent.

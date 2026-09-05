@@ -1,5 +1,6 @@
-import { simulateMatch, type Team as SimulatorTeam } from '@maiden/simulator';
+import { simulateDelivery, simulateMatch, type Team as SimulatorTeam } from '@maiden/simulator';
 import { toSimulatorTeam } from '../team/adapter.js';
+import { loadCalibratedConfig } from '../team/simConfig.js';
 import type { CricketFormat, MaidenTeam } from '../team/types.js';
 import type {
   CampaignMatchRecord,
@@ -135,12 +136,16 @@ export function executeFixture(
   const teamA = getSimTeam(fixture.homeTeamId, fixture.homeTeamName);
   const teamB = getSimTeam(fixture.awayTeamId, fixture.awayTeamName);
 
-  const matchResult = simulateMatch({
-    format,
-    teamA,
-    teamB,
-    seed: fixture.matchSeed,
-  });
+  const matchResult = simulateMatch(
+    {
+      format,
+      teamA,
+      teamB,
+      seed: fixture.matchSeed,
+    },
+    simulateDelivery,
+    loadCalibratedConfig(),
+  );
 
   const inn1 = matchResult.innings1;
   const inn2 = matchResult.innings2;
@@ -220,6 +225,8 @@ export function executeFixture(
     marginValue,
     ballsRemaining,
     isThrashing,
+    simulationVersion: matchResult.simulationVersion,
+    configVersion: matchResult.configVersion,
     fullResult: userInvolved ? matchResult : undefined,
     summaryText: matchResult.result.text,
   };

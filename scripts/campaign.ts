@@ -134,9 +134,12 @@ export function runCampaignCLI(): void {
   console.log(`Format: ${format} | Seed: ${seed}`);
 
   const userTeam = buildUserTeam(format, seed);
-  console.log(`\nUser Team: ${userTeam.name} (${userTeam.formation})`);
+  const captainName = userTeam.players.find((p) => p.cardId === userTeam.captainId)?.playerName;
+  const f = userTeam.formation;
+  console.log(`\nUser Team: ${userTeam.name} (${userTeam.format})`);
   console.log(
-    `Formation: ${userTeam.formation} | Captain: ${userTeam.players.find((p) => p.cardId === userTeam.captainId)?.playerName}`,
+    `Formation: ${f.wicketkeepers.length} WK, ${f.bowlingOptions.length} bowling options ` +
+      `(${f.specialistBowlers.length} specialist, ${f.allRounders.length} all-rounder) | Captain: ${captainName}`,
   );
 
   let state = createCampaign(userTeam, format, seed);

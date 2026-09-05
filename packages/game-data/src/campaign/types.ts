@@ -72,6 +72,8 @@ export interface CampaignMatchRecord {
   readonly marginValue: number;
   readonly ballsRemaining: number;
   readonly isThrashing: boolean;
+  readonly simulationVersion: string;
+  readonly configVersion: string;
   readonly fullResult?: MatchResult;
   readonly summaryText: string;
 }

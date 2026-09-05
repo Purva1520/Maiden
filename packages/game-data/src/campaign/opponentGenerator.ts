@@ -1,5 +1,6 @@
 import { SeededRandom } from '@maiden/simulator';
 import { loadWorldCupData, slugifyPlayerName } from '../team/squadBuilder.js';
+import { resolveCardRating } from '../team/ratings.js';
 import { isBowlingOption, isTopOrderCapable } from '../team/bowlingOptions.js';
 import { createDefaultBattingOrder } from '../team/battingOrder.js';
 import { toSimulatorTeam } from '../team/adapter.js';
@@ -194,6 +195,7 @@ export function generateHistoricalOpponents(
     const cards: PlayerCard[] = rawSquad.map((s) => {
       const playerId = slugifyPlayerName(s.player);
       const cardId = `${playerId}__${s.tournament_id}`;
+      const rating = resolveCardRating(s.tournament_id, s.team, s.player);
       return {
         playerId,
         cardId,
@@ -205,8 +207,8 @@ export function generateHistoricalOpponents(
         role: (s.role.toUpperCase() as PlayerRole) || 'BAT',
         wicketkeeper: Boolean(s.wicketkeeper),
         participated: Boolean(s.participated),
-        batRating: null,
-        bowlRating: null,
+        batRating: rating?.batRating ?? null,
+        bowlRating: rating?.bowlRating ?? null,
         ratingVersion: 'v1',
       };
     });
