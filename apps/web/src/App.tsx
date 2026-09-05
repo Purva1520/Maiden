@@ -1,22 +1,36 @@
-import { createHealthResponse } from '@maiden/shared';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { StoreProvider } from './state/store.js';
+import { Layout } from './components/Layout.js';
+import { Home } from './screens/Home.js';
+import { FormatSelection } from './screens/FormatSelection.js';
+import { Roll } from './screens/Roll.js';
+import { Draft } from './screens/Draft.js';
+import { PlayingXI } from './screens/PlayingXI.js';
+import { Campaign } from './screens/Campaign.js';
+import { Match } from './screens/Match.js';
+import { ScorecardScreen } from './screens/ScorecardScreen.js';
+import { Result } from './screens/Result.js';
 
-/**
- * Phase 0 smoke-test page.
- *
- * This is intentionally minimal — it exists only to prove the React + Vite app
- * launches and that a workspace package (@maiden/shared) resolves and runs in
- * the browser bundle. No real Maiden UI is built in Phase 0.
- */
-export function App() {
-  const health = createHealthResponse();
-
+/** Maiden application root. One store, route-level screens (§42). */
+export function App(): React.ReactElement {
   return (
-    <main className="app">
-      <h1>Maiden</h1>
-      <p>Project foundation ready.</p>
-      <p className="status">
-        shared package status: <strong>{health.status}</strong>
-      </p>
-    </main>
+    <StoreProvider>
+      <BrowserRouter>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/format" element={<FormatSelection />} />
+            <Route path="/roll" element={<Roll />} />
+            <Route path="/draft" element={<Draft />} />
+            <Route path="/xi" element={<PlayingXI />} />
+            <Route path="/campaign" element={<Campaign />} />
+            <Route path="/match" element={<Match />} />
+            <Route path="/scorecard" element={<ScorecardScreen />} />
+            <Route path="/result" element={<Result />} />
+            <Route path="*" element={<Home />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </StoreProvider>
   );
 }

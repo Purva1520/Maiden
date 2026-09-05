@@ -13,6 +13,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@fastify/cors": "11.1.0",
+    "@maiden/game-data": "workspace:*",
     "@maiden/shared": "workspace:*",
     "fastify": "5.12.1"
   },
