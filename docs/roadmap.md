@@ -99,21 +99,61 @@ differentiation and Phase 6 determinism are preserved. Reproduce with
 `python scripts/validate_simulation_config.py`. See
 [`simulation-methodology.md`](simulation-methodology.md#calibration-phase-7).
 
-## Phase 8 — (next)
+## Phase 8 — XI Builder, Roll & Game Rules (done)
 
-Not started.
+Seeded historical roll, combined player pool, draft with structured validation
+(11 players · ≥1 keeper · ≥5 bowling options · top-order cover · one card per
+canonical player), captain, batting order, and a simulation-ready `MaidenTeam`
+handed to the Phase 6/7 engine. Lives in `packages/game-data/src/team`. See
+[`team-building.md`](team-building.md).
+
+## Phase 9 — Campaign Engine (done)
+
+A finalized XI runs a full World Cup campaign: deterministic historical
+opponents, a genuinely-simulated round-robin group stage, standings and
+qualification, semifinals, final, and the Champion / Invincible / Golden
+Invincible achievements. Lives in `packages/game-data/src/campaign`. See
+[`campaign.md`](campaign.md).
+
+## Phase 10 — Playable Frontend (done)
+
+The browser game: a React app (`apps/web`) over a stateless Fastify API
+(`apps/api`) exposing the Phase 6–9 engine. Full loop — roll → draft → campaign →
+ball-by-ball match → result — with localStorage persistence. React is
+presentation only; all rules stay in the engine. See
+[`frontend.md`](frontend.md).
+
+## Phase 11 — Integration & Game Feel (done)
+
+A presentation layer (`apps/web/src/presentation`) that paces the match from the
+real event stream: a single-timer controller (`useMatchPresentation`) with
+event-aware timing, delivery reveals (over.ball · bowler → batter · outcome),
+distinct wicket / boundary / milestone feedback, over and innings transitions, a
+match intro with toss, historical badges on every card, and a presentation-only
+Legend tier. Outcomes are never changed. See
+[`frontend.md`](frontend.md#presentation-layer-phase-11--game-feel).
+
+## Phase 12 — Balance, Testing & Production (done)
+
+The release gate. Edge-case, property, extreme-rating, corrupted-save and
+route-guard tests; a randomness audit (all gameplay seeded); a dependency audit
+(0 known advisories); and two orchestrated commands — `pnpm validate:production`
+(fast ordered gate) and `pnpm validate:deep` (12k-innings calibration regression +
+100-campaign batch). Release docs: [`testing.md`](testing.md),
+[`balance.md`](balance.md), [`known-limitations.md`](known-limitations.md),
+[`debugging.md`](debugging.md), [`release-checklist.md`](release-checklist.md).
+Maiden is deterministic, calibrated, tested, and reproducible.
+
+## Beyond v1 — (future)
+
+Candidate work: audio, richer campaign-map animation, a finalized balance pass,
+Super Over / extras / additional dismissal types, and save migration.
 
 ## Game vision (future)
 
-The eventual game will let a player:
-
-1. Choose ODI or T20.
-2. Roll for historical World Cup editions/teams.
-3. Build a Playing XI from players who actually featured in those tournaments.
-4. Use Maiden's own tournament/era-normalized batting & bowling ratings.
-5. Simulate complete matches ball-by-ball.
-6. Play a campaign.
-7. Become **Invincible** by winning every campaign match.
-8. Achieve **Golden Invincible** by winning every match by a "thrashing" margin.
-
-These are documented here for direction only; none are built yet.
+Maiden lets a player choose ODI or T20, roll for historical World Cup
+editions/teams, build a Playing XI from players who actually featured in those
+tournaments (using Maiden's era-normalized ratings), simulate complete matches
+ball-by-ball, play a campaign, and try to become **Invincible** (win every
+campaign match) — or **Golden Invincible** (win every match by a "thrashing"
+margin). Phases 1–10 make this playable end-to-end; later phases refine it.

@@ -10,7 +10,8 @@
     "pnpm": ">=11"
   },
   "scripts": {
-    "dev": "pnpm --filter @maiden/web dev",
+    "dev": "pnpm --parallel --filter=@maiden/web --filter=@maiden/api dev",
+    "dev:web": "pnpm --filter @maiden/web dev",
     "dev:api": "pnpm --filter @maiden/api dev",
     "simulate": "pnpm --filter @maiden/simulator simulate",
     "draft": "tsx scripts/maiden-draft.ts",
@@ -22,6 +23,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "validate:production": "node scripts/validate-production.mjs",
+    "validate:deep": "node scripts/validate-deep.mjs",
     "python:test": ".venv/bin/python -m pytest",
     "python:lint": ".venv/bin/python -m ruff check data-pipeline tests scripts",
     "python:format": ".venv/bin/python -m ruff format data-pipeline tests scripts",

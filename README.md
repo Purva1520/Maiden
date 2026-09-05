@@ -7,21 +7,23 @@ World Cup editions, draft a Playing XI from the players who actually featured in
 those tournaments, and simulate complete matches ball-by-ball — then try to go
 **Invincible** across a campaign.
 
-> **Current phase: Phase 7 — Simulation Calibration (Complete).**
+> **Current phase: Phase 12 — Balance, Testing & Production (Complete).**
 > Phases 1–5 build a canonical `maiden.sqlite`, the statistics parquet, and 0–99
-> player ratings. Phase 6 adds a standalone, seeded, offline limited-overs
-> simulator (`packages/simulator`) — delivery → innings → match, driven by the
-> ratings, producing full scorecards and a structured event stream for ODI and
-> T20. Run `pnpm simulate`. Phase 7 **calibrates** that delivery model against the
-> project's own Cricsheet history so aggregate ODI/T20 scoring distributions match
-> real cricket (aggregate error 1.97 → 0.05 ODI, 1.32 → 0.04 T20); the engine loads
-> the calibrated `data/game/simulation/simulation_config_v1.json`. **Phase 8 is
-> next.**
+> player ratings. Phase 6 adds a seeded offline simulator (`packages/simulator`),
+> Phase 7 calibrates it against real ODI/T20 history, Phase 8 adds the roll + XI
+> builder and Phase 9 the World Cup campaign engine (`packages/game-data`).
+> **Phase 10 is the actual game**: a React frontend (`apps/web`) over a stateless
+> Fastify API (`apps/api`) that exposes the Phase 6–9 engine. Play the whole loop
+> in the browser — roll → draft → campaign → ball-by-ball match → Champion /
+> Invincible / Golden Invincible. **Phase 11** adds the game-feel layer: an
+> event-paced match reveal (`14.5 · Warne to Tendulkar · FOUR!`), wicket / boundary
+> / milestone feedback, over and innings transitions, and historical player
+> identity. **Phase 12** is the release gate — edge-case/property/determinism
+> tests, a clean dependency audit, and `pnpm validate:production` /
+> `validate:deep`. Run the game with **`pnpm dev`** (starts web + API).
 >
-> Campaign mode and frontend follow in subsequent phases. See
-> [`docs/roadmap.md`](docs/roadmap.md),
-> [`docs/rating-methodology.md`](docs/rating-methodology.md), and
-> [`docs/simulation-methodology.md`](docs/simulation-methodology.md).
+> See [Playing Maiden](#playing-maiden-frontend) below, [`docs/roadmap.md`](docs/roadmap.md),
+> [`docs/frontend.md`](docs/frontend.md), and [`docs/testing.md`](docs/testing.md).
 
 ## Tech stack
 
@@ -63,12 +65,43 @@ cp .env.example .env         # local environment
 
 Full instructions: [`docs/development.md`](docs/development.md).
 
+## Playing Maiden (frontend)
+
+```bash
+pnpm install
+pnpm dev          # web on :5173, API on :3000
+# open http://localhost:5173
+```
+
+The browser game plays the full loop: **Home → Format → Roll → Draft → Playing XI
+→ Campaign → Match (ball-by-ball) → Scorecard → Result**, ending in Champion,
+Invincible, or Golden Invincible. An in-progress game is saved to `localStorage`
+(`maiden_save_v1`) and resumes on refresh.
+
+Architecture (all cricket/game rules stay in the Phase 6–9 engine; React is
+presentation only):
+
+```
+apps/web  (React 19 + Vite)         apps/api  (Fastify)
+  screens / components         →      /api/roll, /api/game/*,           →   @maiden/game-data
+  canonical app state (§9)            /api/campaign/{create,start,play-next}   @maiden/simulator
+  localStorage persistence            (stateless: client holds the state)     (fs data + calibrated config)
+```
+
+The web bundle never imports Node-only engine code — it holds the serializable
+game/campaign state and posts it to the API for each transition. Configure the
+API URL with `VITE_API_BASE_URL` (default `http://localhost:3000`). Full detail:
+[`docs/frontend.md`](docs/frontend.md).
+
 ## Commands
 
 ```bash
-pnpm dev            # start the web app (http://localhost:5173)
-pnpm dev:api        # start the API   (http://localhost:3000)
+pnpm dev            # start the game: web (http://localhost:5173) + API (:3000)
+pnpm dev:web        # web dev server only
+pnpm dev:api        # API only
 pnpm simulate       # simulate a full ODI match and print the scorecard
+pnpm draft          # CLI: roll + build a legal XI + hand off to the simulator
+pnpm campaign       # CLI: run a full campaign
 pnpm --filter @maiden/simulator calibrate   # re-fit the calibrated config from history
 pnpm build          # build web + api
 pnpm typecheck      # type-check all packages

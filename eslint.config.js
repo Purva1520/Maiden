@@ -46,7 +46,7 @@ export default tseslint.config(
 
   // Node environment for the API and any tooling/config files.
   {
-    files: ['apps/api/**/*.ts', '*.{js,ts}', 'scripts/**/*.{js,ts}'],
+    files: ['apps/api/**/*.ts', '*.{js,mjs,ts}', 'scripts/**/*.{js,mjs,ts}'],
     languageOptions: {
       globals: { ...globals.node },
     },
