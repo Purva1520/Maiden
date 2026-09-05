@@ -20,6 +20,9 @@ export { SeededRandom } from './core/random.js';
 export { FORMAT_CONFIG, phaseForOver } from './config/formats.js';
 export { PROBABILITY_CONFIG } from './config/probabilities.js';
 export { SIMULATION_VERSION, CONFIG_VERSION } from './config/version.js';
+export { DEFAULT_SIMULATION_CONFIG } from './config/models.js';
+export type { SimulationConfig, ProbabilityModel } from './config/models.js';
+export { loadSimulationConfig } from './config/load.js';
 
 // -- formatting & errors --
 export { formatOvers, formatScore, formatStrikeRate, formatEconomy } from './format.js';

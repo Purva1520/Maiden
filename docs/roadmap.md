@@ -82,14 +82,26 @@ delivery → innings → match. A probabilistic delivery model driven by Phase 5
 `batRating`/`bowlRating` plus phase, format and chase-state modifiers; strike and
 bowler rotation; full batting/bowling scorecards, fall of wickets and a structured
 event stream; ODI and T20. `pnpm simulate` plays a complete match from the CLI.
-Not yet statistically calibrated (Phase 7). See
-[`simulation-methodology.md`](simulation-methodology.md) and
+See [`simulation-methodology.md`](simulation-methodology.md) and
 [`simulation-config.md`](simulation-config.md).
 
-## Phase 7 — Simulation Calibration (next)
+## Phase 7 — Simulation Calibration (done)
 
-Not started. Will tune the simulator's configurable probability parameters so
-simulated score/wicket/margin distributions match historical World Cup data.
+The Phase 6 delivery model is fitted to the project's own Cricsheet history
+(broad men's ODI + T20 population, not WC-only). Iterative proportional fitting
+tunes each format's base outcome distribution so aggregate mean score / run rate /
+wicket / four / six rates match history; ODI and T20 are calibrated separately.
+Aggregate relative error fell from 1.967 → 0.047 (ODI) and 1.319 → 0.044 (T20)
+over 12,000 innings/format. The engine **loads** the calibrated numbers from
+`data/game/simulation/simulation_config_v1.json` (not hardcoded); rating
+differentiation and Phase 6 determinism are preserved. Reproduce with
+`pnpm --filter @maiden/simulator calibrate` and validate with
+`python scripts/validate_simulation_config.py`. See
+[`simulation-methodology.md`](simulation-methodology.md#calibration-phase-7).
+
+## Phase 8 — (next)
+
+Not started.
 
 ## Game vision (future)
 

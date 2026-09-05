@@ -6,7 +6,7 @@ import { SeededRandom } from './random.js';
 import { simulateInnings, validatePlayerRatings } from './innings-engine.js';
 import { simulateDelivery } from './delivery-engine.js';
 import { FORMAT_CONFIG } from '../config/formats.js';
-import { CONFIG_VERSION, SIMULATION_VERSION } from '../config/version.js';
+import { DEFAULT_SIMULATION_CONFIG, type SimulationConfig } from '../config/models.js';
 import { hasBowlingCapacity } from '../rules/bowling.js';
 import { isBowler, type Team } from '../models/player.js';
 import type { DeliverySimulator, MatchEvent } from '../models/innings.js';
@@ -31,6 +31,7 @@ function validateTeam(team: Team, format: CricketFormat): void {
 export function simulateMatch(
   input: MatchInput,
   deliverySim: DeliverySimulator = simulateDelivery,
+  config: SimulationConfig = DEFAULT_SIMULATION_CONFIG,
 ): MatchResult {
   const { format, teamA, teamB, seed } = input;
   if (!VALID_FORMATS.includes(format)) {
@@ -60,6 +61,7 @@ export function simulateMatch(
     { type: 'TOSS', winner: tossWinner.name, decision },
   ];
 
+  const model = config.formats[format];
   const innings1 = simulateInnings(
     {
       inningsNumber: 1,
@@ -70,12 +72,14 @@ export function simulateMatch(
     },
     rng,
     deliverySim,
+    model,
   );
   const target = innings1.runs + 1;
   const innings2 = simulateInnings(
     { inningsNumber: 2, battingTeam: bowlingFirst, bowlingTeam: battingFirst, format, target },
     rng,
     deliverySim,
+    model,
   );
 
   events.push(...innings1.events, ...innings2.events);
@@ -130,7 +134,7 @@ export function simulateMatch(
     result,
     events,
     seed,
-    simulationVersion: SIMULATION_VERSION,
-    configVersion: CONFIG_VERSION,
+    simulationVersion: config.simulationVersion,
+    configVersion: config.calibrationVersion,
   };
 }

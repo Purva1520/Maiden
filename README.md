@@ -7,15 +7,18 @@ World Cup editions, draft a Playing XI from the players who actually featured in
 those tournaments, and simulate complete matches ball-by-ball — then try to go
 **Invincible** across a campaign.
 
-> **Current phase: Phase 6 — Cricket Simulation Engine (Complete).**
+> **Current phase: Phase 7 — Simulation Calibration (Complete).**
 > Phases 1–5 build a canonical `maiden.sqlite`, the statistics parquet, and 0–99
 > player ratings. Phase 6 adds a standalone, seeded, offline limited-overs
 > simulator (`packages/simulator`) — delivery → innings → match, driven by the
 > ratings, producing full scorecards and a structured event stream for ODI and
-> T20. Run `pnpm simulate`. Not yet statistically calibrated (Phase 7). **Phase 7
-> (Simulation Calibration) is next.**
+> T20. Run `pnpm simulate`. Phase 7 **calibrates** that delivery model against the
+> project's own Cricsheet history so aggregate ODI/T20 scoring distributions match
+> real cricket (aggregate error 1.97 → 0.05 ODI, 1.32 → 0.04 T20); the engine loads
+> the calibrated `data/game/simulation/simulation_config_v1.json`. **Phase 8 is
+> next.**
 >
-> Calibration, campaign mode, and frontend follow in subsequent phases. See
+> Campaign mode and frontend follow in subsequent phases. See
 > [`docs/roadmap.md`](docs/roadmap.md),
 > [`docs/rating-methodology.md`](docs/rating-methodology.md), and
 > [`docs/simulation-methodology.md`](docs/simulation-methodology.md).
@@ -66,6 +69,7 @@ Full instructions: [`docs/development.md`](docs/development.md).
 pnpm dev            # start the web app (http://localhost:5173)
 pnpm dev:api        # start the API   (http://localhost:3000)
 pnpm simulate       # simulate a full ODI match and print the scorecard
+pnpm --filter @maiden/simulator calibrate   # re-fit the calibrated config from history
 pnpm build          # build web + api
 pnpm typecheck      # type-check all packages
 pnpm test           # run Vitest suites
@@ -148,8 +152,10 @@ Then `validate_world_cups.py`, `validate_identity.py`,
 
 Phase 0 established the project foundation, Phase 1 delivered the Cricsheet match
 pipeline, Phase 2 delivered the historical World Cup database, and Phase 3 added
-the canonical player-identity layer. Phase 4 (Tournament Statistics & Era
-Normalization) is next. Full plan in [`docs/roadmap.md`](docs/roadmap.md).
+the canonical player-identity layer. Phase 4 delivered tournament statistics and
+era normalization, Phase 5 the player ratings, Phase 6 the ball-by-ball simulation
+engine, and Phase 7 calibrated that engine against historical ODI/T20
+distributions. Phase 8 is next. Full plan in [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Data attribution
 

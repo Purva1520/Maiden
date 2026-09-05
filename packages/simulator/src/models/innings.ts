@@ -90,6 +90,7 @@ export interface InningsResult {
 export type DeliverySimulator = (
   context: import('./delivery.js').DeliveryContext,
   rng: import('../core/random.js').SeededRandom,
+  model?: import('../config/models.js').ProbabilityModel,
 ) => import('./delivery.js').DeliveryResult;
 
 export type { PlayerContext };

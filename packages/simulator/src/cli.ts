@@ -4,12 +4,32 @@
  *
  * Usage: tsx src/cli.ts [--format odi|t20] [--seed N] [--full]
  */
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { simulateMatch } from './core/match-engine.js';
+import { simulateDelivery } from './core/delivery-engine.js';
+import { loadSimulationConfig } from './config/load.js';
+import { DEFAULT_SIMULATION_CONFIG, type SimulationConfig } from './config/models.js';
 import { australiaXI, indiaXI } from './fixtures.js';
 import { formatEconomy, formatOvers, formatScore, formatStrikeRate } from './format.js';
 import type { CricketFormat } from './models/delivery.js';
 import type { BatterScore, BowlerScore, InningsResult } from './models/innings.js';
 import type { MatchResult } from './models/match.js';
+
+/** Load the calibrated Phase 7 config if present, else the Phase 6 baseline. */
+function loadConfig(): SimulationConfig {
+  try {
+    const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+    const raw = readFileSync(
+      resolve(root, 'data/game/simulation/simulation_config_v1.json'),
+      'utf-8',
+    );
+    return loadSimulationConfig(JSON.parse(raw));
+  } catch {
+    return DEFAULT_SIMULATION_CONFIG;
+  }
+}
 
 interface Args {
   format: CricketFormat;
@@ -134,12 +154,11 @@ function render(match: MatchResult, full: boolean): string {
 
 function main(): void {
   const args = parseArgs(process.argv.slice(2));
-  const match = simulateMatch({
-    format: args.format,
-    teamA: indiaXI,
-    teamB: australiaXI,
-    seed: args.seed,
-  });
+  const match = simulateMatch(
+    { format: args.format, teamA: indiaXI, teamB: australiaXI, seed: args.seed },
+    simulateDelivery,
+    loadConfig(),
+  );
   console.log(render(match, args.full));
 }
 

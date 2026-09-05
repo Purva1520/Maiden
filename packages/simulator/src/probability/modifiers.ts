@@ -1,8 +1,7 @@
 /** Outcome-probability modifiers: phase, skill, batting style, chase pressure. */
-import type { CricketFormat, MatchState, OutcomeProbabilities } from '../models/delivery.js';
+import type { MatchState, OutcomeProbabilities } from '../models/delivery.js';
 import { OUTCOMES } from '../models/delivery.js';
 import type { BattingStyle } from '../models/player.js';
-import { FORMAT_CONFIG } from '../config/formats.js';
 import type { OutcomeMultipliers, ProbabilityConfig } from '../config/probabilities.js';
 
 function clamp(x: number, lo: number, hi: number): number {
@@ -45,14 +44,13 @@ export function styleMultipliers(
 /** Chase-pressure aggression from the required run rate (§19/§54). */
 export function matchStateMultipliers(
   state: MatchState,
-  format: CricketFormat,
+  parRunRate: number,
   cfg: ProbabilityConfig['matchState'],
 ): OutcomeMultipliers {
   if (state.runsRequired === null || state.ballsRemaining === null || state.ballsRemaining <= 0) {
     return {};
   }
   const requiredRunRate = (state.runsRequired * 6) / state.ballsRemaining;
-  const parRunRate = FORMAT_CONFIG[format].parRunRate;
   const aggression = clamp(
     (requiredRunRate - parRunRate) / cfg.scale,
     -cfg.maxAggression,

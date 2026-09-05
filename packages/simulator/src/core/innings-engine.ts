@@ -21,6 +21,7 @@ import { FORMAT_CONFIG, phaseForOver } from '../config/formats.js';
 import { chooseBowler, hasBowlingCapacity } from '../rules/bowling.js';
 import { shouldRotateOnRuns } from '../rules/strike.js';
 import { simulateDelivery } from './delivery-engine.js';
+import { DEFAULT_SIMULATION_CONFIG, type ProbabilityModel } from '../config/models.js';
 import { formatScore } from '../format.js';
 import { InvalidRatingError, InvalidTeamError, SimulationInvariantError } from '../errors.js';
 
@@ -39,6 +40,7 @@ export function simulateInnings(
   input: InningsInput,
   rng: SeededRandom,
   deliverySim: DeliverySimulator = simulateDelivery,
+  model: ProbabilityModel = DEFAULT_SIMULATION_CONFIG.formats[input.format],
 ): InningsResult {
   const cfg = FORMAT_CONFIG[input.format];
   const battingPlayers = input.battingTeam.players;
@@ -135,7 +137,7 @@ export function simulateInnings(
         format: input.format,
         matchState,
       };
-      const res = deliverySim(ctx, rng);
+      const res = deliverySim(ctx, rng, model);
 
       legalBalls += 1;
       strikerScore.balls += 1;

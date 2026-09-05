@@ -1,12 +1,16 @@
-# Simulation Methodology (Phase 6, v1)
+# Simulation Methodology (v1)
 
 Maiden's standalone limited-overs cricket simulation engine
 (`packages/simulator`). It plays a complete ODI or T20 match offline, driven by
 Phase 5 ratings and a seeded RNG, and emits structured state + events for a
-future UI. **The model is not yet statistically calibrated — Phase 7 will
-calibrate it against historical distributions.**
+future UI. The delivery model (Phase 6) is **statistically calibrated** in
+Phase 7 so its aggregate ODI and T20 distributions match the project's own
+Cricsheet history — see [Calibration (Phase 7)](#calibration-phase-7) below.
 
-`simulationVersion = "v1"`, `configVersion = "v1"`.
+`simulationVersion = "v1"`, `configVersion = "v1"`. The engine loads its
+calibrated numbers from `data/game/simulation/simulation_config_v1.json`; the
+Phase 6 baseline lives in `config/` as `DEFAULT_SIMULATION_CONFIG` and is what
+the engine falls back to when no config file is present.
 
 ## Architecture
 
@@ -110,15 +114,127 @@ CLI formats the structured result (§40/§112).
 
 ## Known limitations
 
-- Not statistically calibrated: mean scores are plausible (batch smoke: ODI ≈
-  295/8.7, T20 ≈ 175/5.8) but Phase 7 owns real calibration against historical
-  distributions.
 - No extras, run-outs, or multiple dismissal kinds; no Super Over; no pitch/weather.
+  Because the sim has no extras, calibration folds extras into the scoring outcomes
+  so simulated **total** runs match historical **total** runs (see below).
 - Fixture ratings in `fixtures.ts` are **TEST FIXTURES, not Maiden ratings** (§64).
+- Chase success rate is calibrated only as a secondary metric and remains a few
+  points above history (see the calibration limitations).
 
-## Phase 7 handoff
+## Calibration (Phase 7)
 
-`simulateMatch({ format, teamA, teamB, seed })` is pure and side-effect-free, so
-Phase 7 can run large batches over seeds and collect scores/run-rates/wickets/
-margins without modifying the engine (§123). Parameters live in config and are
-versioned, so calibration changes only the numbers, not the architecture.
+Phase 7 tunes the delivery model's **per-format base outcome distribution** so the
+simulator's aggregate scoring distributions match real cricket, without overfitting
+to any individual match and without hardcoding any historical result. The engine is
+unchanged; only the numbers in `simulation_config_v1.json` change (§55/§77).
+
+### Dataset & population
+
+Targets are computed from the project's own Cricsheet database (`maiden.sqlite`),
+not from World-Cup matches only — a broad men's ODI + T20 population
+(`data-pipeline/calibration/historical.py`, materialized by
+`scripts/build_historical_calibration.py`). A **full innings** is one that faced
+≥ 80 % of its legal balls **or** was bowled out, so rain-shortened/abandoned
+fragments do not bias the means. Score is the innings total (**including extras**);
+legal balls exclude wides and no-balls; rates are per-100-legal-balls; run rate is
+`runs / legal_balls × 6`. The simulated side uses the **identical** definitions
+(`packages/simulator/src/calibration/harness.ts`), so history and sim are compared
+like for like.
+
+### Metrics & neutral teams
+
+Calibration matches are played between two **flat, equally-rated neutral teams**
+(72/72, skill signal `s = 0`), so the realized distribution reflects the config,
+not a team-skill gap. Headline metrics: mean score, run rate, wicket rate (/100),
+four rate (/100), six rate (/100); secondary: chase success, win margins.
+
+### Method
+
+Iterative proportional fitting (§44 — simplest method that works): each iteration
+runs a batch, scales `FOUR / SIX / WICKET` toward their target rates, shifts
+`ONE ↔ DOT` toward the target run rate, renormalizes the 7-outcome vector, and
+repeats (6 iterations). Phase/skill/style/match-state modifiers are inherited from
+the Phase 6 baseline unchanged. ODI and T20 are calibrated **separately** into
+distinct parameter sets.
+
+### Baseline → calibrated (12,000 innings/format, neutral teams)
+
+**ODI**
+
+| Metric      | Historical | Baseline (P6) | Calibrated |
+| ----------- | ---------: | ------------: | ---------: |
+| Mean score  |     239.40 |        295.39 |     240.14 |
+| Run rate    |       5.11 |          6.54 |       5.09 |
+| Wicket /100 |       2.98 |          3.42 |       2.98 |
+| Four /100   |       7.24 |         11.43 |       7.17 |
+| Six /100    |       1.40 |          2.42 |       1.44 |
+| Chase %     |      48.01 |         60.80 |      55.00 |
+
+Aggregate relative error: **1.967 → 0.047**.
+
+**T20**
+
+| Metric      | Historical | Baseline (P6) | Calibrated |
+| ----------- | ---------: | ------------: | ---------: |
+| Mean score  |     143.46 |        165.86 |     143.72 |
+| Run rate    |       7.41 |          8.37 |       7.38 |
+| Wicket /100 |       6.20 |          5.15 |       6.29 |
+| Four /100   |       9.54 |         15.47 |       9.56 |
+| Six /100    |       4.28 |          5.32 |       4.19 |
+| Chase %     |      48.72 |         69.40 |      53.40 |
+
+Aggregate relative error: **1.319 → 0.044**.
+
+### Parameter sensitivity
+
+`+10 %` on each calibrated base outcome (renormalized), 4,000 innings, showing
+change in mean score / run rate:
+
+| Param  | ODI Δscore | ODI Δrr | T20 Δscore | T20 Δrr |
+| ------ | ---------: | ------: | ---------: | ------: |
+| ONE    |      +3.07 |   +0.03 |      −0.38 |   −0.06 |
+| FOUR   |      +6.79 |   +0.13 |      +3.24 |   +0.16 |
+| SIX    |      +2.11 |   +0.04 |      +2.39 |   +0.12 |
+| WICKET |      −8.00 |   −0.03 |      −3.39 |   −0.07 |
+| DOT    |      −8.48 |   −0.23 |      −3.29 |   −0.20 |
+
+Score is most sensitive to `WICKET` and `DOT` (they end/waste deliveries) and to
+`FOUR`; boundary rates move with their own parameters as expected. This confirms
+the calibration levers are the right ones and none is pathologically dominant.
+
+### Rating differentiation preserved
+
+Calibration tunes the neutral baseline only; the skill matchup is untouched, so
+elite batting still out-scores weak batting against the same attack and elite
+bowling still concedes less (asserted in `calibration.test.ts`, §71/§72). Player
+ratings are **not** modified by calibration.
+
+### Reproduce
+
+```bash
+python scripts/build_historical_calibration.py            # compute targets from maiden.sqlite
+pnpm --filter @maiden/simulator calibrate                 # fit + write config + reports
+python scripts/validate_simulation_config.py              # sanity-check the config
+```
+
+Outputs: `data/game/simulation/simulation_config_v1.json` (tracked, loaded by the
+engine), `data/processed/calibration_report_v1.{json,txt}`,
+`calibration_summary_v1.json`, `calibration_sensitivity_v1.json`.
+
+### Calibration limitations (v1)
+
+- The sim has no extras, so extras are folded into scoring outcomes to match
+  **total** runs; per-outcome rates therefore absorb a small extras component.
+- Chase success is a secondary metric and stays a few points high (ODI 55 %,
+  T20 53 % vs ~48 %) — the neutral-team chase model is slightly too likely to
+  overhaul par. Not counted in the aggregate error; a candidate for v2.
+- Targets are a whole-history population, not era- or venue-specific (out of scope,
+  §per-era runtime params excluded).
+
+## Phase 8 handoff
+
+`simulateMatch({ format, teamA, teamB, seed }, deliverySim, config)` is pure and
+side-effect-free and loads its calibrated numbers from config, so later phases can
+run large batches over seeds and collect scores/run-rates/wickets/margins without
+modifying the engine. Parameters live in config and are versioned, so re-calibration
+changes only the numbers, not the architecture.
