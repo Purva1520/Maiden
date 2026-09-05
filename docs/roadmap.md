@@ -3,22 +3,22 @@
 Maiden is built in phases. Only **Phase 0** is implemented. Everything below it
 is planned scope, not existing functionality.
 
-| Phase | Name                              | Status         |
-| ----- | --------------------------------- | -------------- |
-| 0     | Project Foundation                | ✅ Done        |
-| 1     | Cricsheet Data Pipeline           | ✅ Done        |
-| 2     | Historical World Cup Database     | ✅ Done        |
-| 3     | Player Identity & Normalization   | Planned        |
-| 4     | Tournament Statistics & Era Norm. | Planned        |
-| 5     | Maiden Rating System              | Planned        |
-| 6     | Cricket Simulation Engine         | Planned        |
-| 7     | Simulation Calibration            | Planned        |
-| 8     | XI Builder & Game Rules           | Planned        |
-| 9     | Campaign Engine                   | Planned        |
-| 10    | Frontend                          | Planned        |
-| 11    | Integration & Game Feel           | Planned        |
-| 12    | Testing, Balance & Production     | Planned        |
-| 13    | Optional Features                 | Planned        |
+| Phase | Name                              | Status  |
+| ----- | --------------------------------- | ------- |
+| 0     | Project Foundation                | ✅ Done |
+| 1     | Cricsheet Data Pipeline           | ✅ Done |
+| 2     | Historical World Cup Database     | ✅ Done |
+| 3     | Player Identity & Normalization   | Planned |
+| 4     | Tournament Statistics & Era Norm. | Planned |
+| 5     | Maiden Rating System              | Planned |
+| 6     | Cricket Simulation Engine         | Planned |
+| 7     | Simulation Calibration            | Planned |
+| 8     | XI Builder & Game Rules           | Planned |
+| 9     | Campaign Engine                   | Planned |
+| 10    | Frontend                          | Planned |
+| 11    | Integration & Game Feel           | Planned |
+| 12    | Testing, Balance & Production     | Planned |
+| 13    | Optional Features                 | Planned |
 
 ## Phase 0 — Project Foundation (done)
 

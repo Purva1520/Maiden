@@ -1,0 +1,7 @@
+# Ensure all text files have LF line endings in git and on checkout
+* text=auto eol=lf
+
+# Windows scripts keep CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
