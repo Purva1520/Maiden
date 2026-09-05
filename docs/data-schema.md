@@ -248,3 +248,11 @@ Phase 4 derives analytical datasets **from** `maiden.sqlite` into Parquet under
 
 Definitions and formulas: [`statistical-methodology.md`](statistical-methodology.md);
 consumption guide: [`tournament-statistics.md`](tournament-statistics.md).
+
+## Phase 5 rating outputs
+
+Phase 5 adds a `player_ratings` **table** to `maiden.sqlite` (0–99 batting/
+bowling ratings per player × tournament × team × format, with latent scores,
+confidence, sample/coverage status and version metadata), plus
+`player_ratings.parquet`, `ratings_v1.json`, and the rating reports under
+`data/processed/`. Methodology: [`rating-methodology.md`](rating-methodology.md).

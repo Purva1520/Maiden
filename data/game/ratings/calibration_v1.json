@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "method": "normal_quantile",
+  "description": "Map the shrunk latent to 0-99 by quantile-normalizing the format-and-skill population to a target normal: rating = clip(round(mean + sd * Phi^-1(p)), 0, 99), where p is the Hazen plotting position (rank-0.5)/N of the latent within the population. Populations are per (format, skill) and pooled across ALL tournaments so ratings are cross-era comparable (not per-tournament forced to 99).",
+  "targets": {
+    "ODI_batting": { "mean": 52.0, "sd": 15.0 },
+    "ODI_bowling": { "mean": 52.0, "sd": 15.0 },
+    "T20_batting": { "mean": 52.0, "sd": 15.0 },
+    "T20_bowling": { "mean": 52.0, "sd": 15.0 }
+  },
+  "clip": { "min": 0, "max": 99 }
+}

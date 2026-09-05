@@ -7,17 +7,18 @@ World Cup editions, draft a Playing XI from the players who actually featured in
 those tournaments, and simulate complete matches ball-by-ball — then try to go
 **Invincible** across a campaign.
 
-> **Current phase: Phase 4 — Tournament Statistics & Era Normalization (Complete).**
-> Phases 1–3 build a canonical `maiden.sqlite` (matches, World Cup universe,
-> player identities). Phase 4 adds a reproducible statistics pipeline producing
-> `data/processed/player_tournament_stats.parquet` — raw + null-aware derived
-> batting/bowling figures with tournament- and era-relative normalized features,
-> plus persisted baselines. **Phase 5 (Maiden Rating System) is next.**
+> **Current phase: Phase 5 — Maiden Rating System (Complete).**
+> Phases 1–4 build a canonical `maiden.sqlite` and the Phase 4 statistics
+> parquet. Phase 5 adds a versioned, reproducible v1 rating model producing
+> 0–99 `batRating` / `bowlRating` per player × tournament × format
+> (`ratings_v1.json`, `player_ratings.parquet`, `player_ratings` table) — from
+> statistics only, with no per-player, fame, team, or career bonuses. **Phase 6
+> (Cricket Simulation Engine) is next.**
 >
-> Ratings, simulation engine, campaign mode, and frontend follow in subsequent
-> phases. See [`docs/roadmap.md`](docs/roadmap.md),
+> Simulation engine, campaign mode, and frontend follow in subsequent phases. See
+> [`docs/roadmap.md`](docs/roadmap.md),
 > [`docs/statistical-methodology.md`](docs/statistical-methodology.md), and
-> [`docs/tournament-statistics.md`](docs/tournament-statistics.md).
+> [`docs/rating-methodology.md`](docs/rating-methodology.md).
 
 ## Tech stack
 
@@ -116,6 +117,15 @@ python scripts/validate_tournament_stats.py  # validate outputs & reconciliation
 
 See [`docs/statistical-methodology.md`](docs/statistical-methodology.md).
 
+### Player ratings (Phase 5)
+
+```bash
+python scripts/generate_ratings.py --version v1   # -> ratings_v1.json + player_ratings.parquet
+python scripts/validate_ratings.py                # range/null/determinism checks
+```
+
+See [`docs/rating-methodology.md`](docs/rating-methodology.md).
+
 ### Full build order
 
 The database is built in sequence — **run these in order** (each builds on the
@@ -127,10 +137,11 @@ python scripts/build_database.py             # 2. Phase 1: matches/deliveries
 python scripts/build_world_cup_database.py   # 3. Phase 2: World Cup universe
 python scripts/resolve_players.py            # 4. Phase 3: canonical identities
 python scripts/build_tournament_stats.py     # 5. Phase 4: statistics parquet
+python scripts/generate_ratings.py --version v1  # 6. Phase 5: ratings
 ```
 
-Then `validate_world_cups.py`, `validate_identity.py`, and
-`validate_tournament_stats.py` to verify.
+Then `validate_world_cups.py`, `validate_identity.py`,
+`validate_tournament_stats.py`, and `validate_ratings.py` to verify.
 
 ## Roadmap
 

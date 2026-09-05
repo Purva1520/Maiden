@@ -10,8 +10,8 @@ is planned scope, not existing functionality.
 | 2     | Historical World Cup Database     | ✅ Done |
 | 3     | Player Identity & Normalization   | ✅ Done |
 | 4     | Tournament Statistics & Era Norm. | ✅ Done |
-| 5     | Maiden Rating System              | ⏭️ Next |
-| 6     | Cricket Simulation Engine         | Planned |
+| 5     | Maiden Rating System              | ✅ Done |
+| 6     | Cricket Simulation Engine         | ⏭️ Next |
 | 7     | Simulation Calibration            | Planned |
 | 8     | XI Builder & Game Rules           | Planned |
 | 9     | Campaign Engine                   | Planned |
@@ -64,10 +64,21 @@ missing data is never imputed. See
 [`statistical-methodology.md`](statistical-methodology.md) and
 [`tournament-statistics.md`](tournament-statistics.md). No Maiden ratings yet.
 
-## Phase 5 — Maiden Rating System (next)
+## Phase 5 — Maiden Rating System (done)
 
-Not started. Will transform the Phase 4 normalized features into Maiden batting
-and bowling ratings.
+Versioned, reproducible v1 rating model that turns the Phase 4 normalized
+features into 0–99 `batRating` / `bowlRating` per player × tournament × format.
+Interpretable weighted-percentile latent (tournament + era blend) with sample-
+size shrinkage, mapped to 0–99 by cross-era, format-specific normal-quantile
+calibration. No per-player ratings, fame/team/career bonuses, or simulation
+feedback. Outputs `ratings_v1.json`, `player_ratings.parquet`, and a
+`player_ratings` SQLite table. See
+[`rating-methodology.md`](rating-methodology.md).
+
+## Phase 6 — Cricket Simulation Engine (next)
+
+Not started. Will consume `batRating` / `bowlRating` to drive ball-by-ball
+delivery probabilities (ratings → simulation, never the reverse).
 
 ## Game vision (future)
 

@@ -55,6 +55,18 @@ STATS_MANIFEST = PROCESSED_DIR / "tournament_stats_manifest.json"
 STATS_REVIEW_JSON = PROCESSED_DIR / "tournament_stats_review.json"
 FEATURE_DICTIONARY = PROCESSED_DIR / "feature_dictionary.json"
 
+# Phase 5: Maiden rating system
+RATINGS_CONFIG_DIR = GAME_DIR / "ratings"
+PLAYER_RATINGS_PARQUET = PROCESSED_DIR / "player_ratings.parquet"
+RATING_REPORT_JSON = PROCESSED_DIR / "rating_report.json"
+RATING_REPORT_TXT = PROCESSED_DIR / "rating_report.txt"
+RATING_DISTRIBUTION_REPORT = PROCESSED_DIR / "rating_distribution_report.json"
+
+
+def ratings_json(version: str) -> Path:
+    return PROCESSED_DIR / f"ratings_{version}.json"
+
+
 # ---------------------------------------------------------------------------
 # Format canonicalization
 # ---------------------------------------------------------------------------

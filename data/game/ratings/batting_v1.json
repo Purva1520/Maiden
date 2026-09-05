@@ -1,0 +1,30 @@
+{
+  "version": "v1",
+  "skill": "batting",
+  "description": "Maiden batting rating model v1. Latent = shrunk weighted mean of blended (tournament+era) percentile features; higher percentile = better. See docs/rating-methodology.md.",
+  "blend": { "tournament_pct_weight": 0.5, "era_pct_weight": 0.5 },
+  "shrinkage": {
+    "toward_percentile": 50.0,
+    "innings_constant_k": 3.0,
+    "note": "latent_shrunk = w*latent + (1-w)*50, w = innings/(innings+k). Pulls small samples toward the population median percentile."
+  },
+  "confidence_innings": { "high": 5, "medium": 3 },
+  "features": {
+    "ODI": {
+      "bat_runs_per_innings": 0.3,
+      "bat_average": 0.28,
+      "bat_strike_rate": 0.22,
+      "bat_runs": 0.2
+    },
+    "T20": {
+      "bat_strike_rate": 0.34,
+      "bat_runs_per_innings": 0.3,
+      "bat_runs": 0.2,
+      "bat_average": 0.16
+    }
+  },
+  "excluded_features": {
+    "bat_boundary_rate": "highly correlated with strike rate; excluded from v1 to avoid double counting",
+    "bat_highest/bat_fifties/bat_hundreds": "milestone counts correlated with runs/average; not in v1 latent"
+  }
+}

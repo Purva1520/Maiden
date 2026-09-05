@@ -1,0 +1,30 @@
+{
+  "version": "v1",
+  "skill": "bowling",
+  "description": "Maiden bowling rating model v1. Latent = shrunk weighted mean of blended (tournament+era) percentile features; percentiles are already direction-corrected so higher = better (low economy/average/SR score high). See docs/rating-methodology.md.",
+  "blend": { "tournament_pct_weight": 0.5, "era_pct_weight": 0.5 },
+  "shrinkage": {
+    "toward_percentile": 50.0,
+    "innings_constant_k": 3.0,
+    "note": "latent_shrunk = w*latent + (1-w)*50, w = innings/(innings+k)."
+  },
+  "confidence_innings": { "high": 5, "medium": 3 },
+  "features": {
+    "ODI": {
+      "bowl_economy": 0.28,
+      "bowl_wickets": 0.27,
+      "bowl_average": 0.25,
+      "bowl_strike_rate": 0.2
+    },
+    "T20": {
+      "bowl_economy": 0.4,
+      "bowl_wickets": 0.25,
+      "bowl_average": 0.2,
+      "bowl_strike_rate": 0.15
+    }
+  },
+  "excluded_features": {
+    "bowl_wickets_per_innings": "highly correlated with wickets; excluded from v1 to avoid double counting",
+    "bowl_five_wickets/bowl_maidens": "sparse milestone counts; not in v1 latent"
+  }
+}
