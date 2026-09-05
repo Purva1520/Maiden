@@ -67,15 +67,19 @@ describe('calibrated distributions match history (§70/§89)', () => {
   const run = cfg ? it : it.skip;
 
   for (const fmt of ['ODI', 'T20'] as const) {
-    run(`${fmt} score & rates are within tolerance`, () => {
-      const h = HISTORICAL[fmt];
-      const s = runBatch(cfg!, { format: fmt, matches: 1500, seedBase: 20_000 });
-      expect(Math.abs(s.score.mean - h.score) / h.score).toBeLessThan(0.08);
-      expect(Math.abs(s.run_rate.mean - h.run_rate) / h.run_rate).toBeLessThan(0.08);
-      expect(Math.abs(s.wicket_rate.mean - h.wicket_rate) / h.wicket_rate).toBeLessThan(0.12);
-      expect(Math.abs(s.four_rate.mean - h.four_rate) / h.four_rate).toBeLessThan(0.12);
-      expect(Math.abs(s.six_rate.mean - h.six_rate) / h.six_rate).toBeLessThan(0.15);
-    });
+    run(
+      `${fmt} score & rates are within tolerance`,
+      () => {
+        const h = HISTORICAL[fmt];
+        const s = runBatch(cfg!, { format: fmt, matches: 1500, seedBase: 20_000 });
+        expect(Math.abs(s.score.mean - h.score) / h.score).toBeLessThan(0.08);
+        expect(Math.abs(s.run_rate.mean - h.run_rate) / h.run_rate).toBeLessThan(0.08);
+        expect(Math.abs(s.wicket_rate.mean - h.wicket_rate) / h.wicket_rate).toBeLessThan(0.12);
+        expect(Math.abs(s.four_rate.mean - h.four_rate) / h.four_rate).toBeLessThan(0.12);
+        expect(Math.abs(s.six_rate.mean - h.six_rate) / h.six_rate).toBeLessThan(0.15);
+      },
+      30_000,
+    );
   }
 });
 

@@ -13,6 +13,8 @@
     "dev": "pnpm --filter @maiden/web dev",
     "dev:api": "pnpm --filter @maiden/api dev",
     "simulate": "pnpm --filter @maiden/simulator simulate",
+    "draft": "tsx scripts/maiden-draft.ts",
+    "campaign": "tsx scripts/campaign.ts",
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
@@ -37,6 +39,7 @@
     "eslint-plugin-react-refresh": "0.5.6",
     "globals": "17.12.0",
     "prettier": "3.9.6",
+    "tsx": "4.23.13",
     "typescript": "6.0.3",
     "typescript-eslint": "8.69.0"
   }

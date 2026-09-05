@@ -1,0 +1,34 @@
+{
+  "version": "v1",
+  "points": {
+    "win": 2,
+    "tie": 1,
+    "loss": 0
+  },
+  "tieBreakerOrder": [
+    "POINTS",
+    "RUN_DIFFERENTIAL",
+    "WINS",
+    "TEAM_ID"
+  ],
+  "ODI": {
+    "groupTeams": 8,
+    "qualifiers": 4,
+    "matchesPerTeam": 7,
+    "thrashing": {
+      "winByRuns": 50,
+      "winByWickets": 6,
+      "minBallsRemaining": 30
+    }
+  },
+  "T20": {
+    "groupTeams": 8,
+    "qualifiers": 4,
+    "matchesPerTeam": 7,
+    "thrashing": {
+      "winByRuns": 30,
+      "winByWickets": 6,
+      "minBallsRemaining": 24
+    }
+  }
+}

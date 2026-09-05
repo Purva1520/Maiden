@@ -3,14 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Access layer for curated, game-ready Maiden data (placeholder in Phase 0).",
+  "description": "Access layer for curated, game-ready Maiden data and XI building mechanics.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./team": "./src/team/index.ts",
+    "./campaign": "./src/campaign/index.ts"
   },
   "types": "./src/index.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "@maiden/simulator": "workspace:*"
   },
   "devDependencies": {
     "typescript": "6.0.3",
