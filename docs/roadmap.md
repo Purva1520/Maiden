@@ -11,8 +11,8 @@ is planned scope, not existing functionality.
 | 3     | Player Identity & Normalization   | ✅ Done |
 | 4     | Tournament Statistics & Era Norm. | ✅ Done |
 | 5     | Maiden Rating System              | ✅ Done |
-| 6     | Cricket Simulation Engine         | ⏭️ Next |
-| 7     | Simulation Calibration            | Planned |
+| 6     | Cricket Simulation Engine         | ✅ Done |
+| 7     | Simulation Calibration            | ⏭️ Next |
 | 8     | XI Builder & Game Rules           | Planned |
 | 9     | Campaign Engine                   | Planned |
 | 10    | Frontend                          | Planned |
@@ -75,10 +75,21 @@ feedback. Outputs `ratings_v1.json`, `player_ratings.parquet`, and a
 `player_ratings` SQLite table. See
 [`rating-methodology.md`](rating-methodology.md).
 
-## Phase 6 — Cricket Simulation Engine (next)
+## Phase 6 — Cricket Simulation Engine (done)
 
-Not started. Will consume `batRating` / `bowlRating` to drive ball-by-ball
-delivery probabilities (ratings → simulation, never the reverse).
+Standalone, seeded, offline limited-overs simulator (`packages/simulator`):
+delivery → innings → match. A probabilistic delivery model driven by Phase 5
+`batRating`/`bowlRating` plus phase, format and chase-state modifiers; strike and
+bowler rotation; full batting/bowling scorecards, fall of wickets and a structured
+event stream; ODI and T20. `pnpm simulate` plays a complete match from the CLI.
+Not yet statistically calibrated (Phase 7). See
+[`simulation-methodology.md`](simulation-methodology.md) and
+[`simulation-config.md`](simulation-config.md).
+
+## Phase 7 — Simulation Calibration (next)
+
+Not started. Will tune the simulator's configurable probability parameters so
+simulated score/wicket/margin distributions match historical World Cup data.
 
 ## Game vision (future)
 

@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "pnpm --filter @maiden/web dev",
     "dev:api": "pnpm --filter @maiden/api dev",
+    "simulate": "pnpm --filter @maiden/simulator simulate",
     "build": "pnpm -r --if-present build",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",

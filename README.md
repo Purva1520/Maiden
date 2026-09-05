@@ -7,18 +7,18 @@ World Cup editions, draft a Playing XI from the players who actually featured in
 those tournaments, and simulate complete matches ball-by-ball — then try to go
 **Invincible** across a campaign.
 
-> **Current phase: Phase 5 — Maiden Rating System (Complete).**
-> Phases 1–4 build a canonical `maiden.sqlite` and the Phase 4 statistics
-> parquet. Phase 5 adds a versioned, reproducible v1 rating model producing
-> 0–99 `batRating` / `bowlRating` per player × tournament × format
-> (`ratings_v1.json`, `player_ratings.parquet`, `player_ratings` table) — from
-> statistics only, with no per-player, fame, team, or career bonuses. **Phase 6
-> (Cricket Simulation Engine) is next.**
+> **Current phase: Phase 6 — Cricket Simulation Engine (Complete).**
+> Phases 1–5 build a canonical `maiden.sqlite`, the statistics parquet, and 0–99
+> player ratings. Phase 6 adds a standalone, seeded, offline limited-overs
+> simulator (`packages/simulator`) — delivery → innings → match, driven by the
+> ratings, producing full scorecards and a structured event stream for ODI and
+> T20. Run `pnpm simulate`. Not yet statistically calibrated (Phase 7). **Phase 7
+> (Simulation Calibration) is next.**
 >
-> Simulation engine, campaign mode, and frontend follow in subsequent phases. See
+> Calibration, campaign mode, and frontend follow in subsequent phases. See
 > [`docs/roadmap.md`](docs/roadmap.md),
-> [`docs/statistical-methodology.md`](docs/statistical-methodology.md), and
-> [`docs/rating-methodology.md`](docs/rating-methodology.md).
+> [`docs/rating-methodology.md`](docs/rating-methodology.md), and
+> [`docs/simulation-methodology.md`](docs/simulation-methodology.md).
 
 ## Tech stack
 
@@ -65,6 +65,7 @@ Full instructions: [`docs/development.md`](docs/development.md).
 ```bash
 pnpm dev            # start the web app (http://localhost:5173)
 pnpm dev:api        # start the API   (http://localhost:3000)
+pnpm simulate       # simulate a full ODI match and print the scorecard
 pnpm build          # build web + api
 pnpm typecheck      # type-check all packages
 pnpm test           # run Vitest suites
