@@ -112,6 +112,34 @@ never corrupts a known-good database. Enable foreign keys when querying:
 Schema and mapping: [`data-schema.md`](data-schema.md),
 [`cricsheet-mapping.md`](cricsheet-mapping.md).
 
+## World Cup universe (Phase 2) & player identity (Phase 3)
+
+The database is built in **strict order** — each stage builds on the previous, so
+run them in sequence:
+
+```bash
+python scripts/download_cricsheet.py         # 1. fetch archives (once)
+python scripts/build_database.py             # 2. Phase 1: matches → maiden.sqlite
+python scripts/build_world_cup_database.py   # 3. Phase 2: tournaments/teams/squads
+python scripts/resolve_players.py            # 4. Phase 3: canonical player ids (atomic)
+```
+
+Validate:
+
+```bash
+python scripts/validate_world_cups.py        # tournament/squad coverage + report
+python scripts/validate_identity.py          # FK + canonical-id integrity
+```
+
+Phase 3 rebuilds the database into a temp file, remaps every player reference from
+Phase 1 integer ids to canonical slugs (e.g. `ms_dhoni`), FK-checks it, backs up
+the old DB, and swaps atomically. `validate_identity.py` **fails** if any player
+still has a numeric id (i.e. Phase 3 hasn't been applied). Reports land in
+`data/processed/` (`world_cup_report.*`, `player_identity_report.*`,
+`player_identity_review.json`, `squad_merges.json`).
+
+Docs: [`world-cup-data.md`](world-cup-data.md), [`player-identity.md`](player-identity.md).
+
 ## Notes on placeholder commands
 
 Several packages are Phase 0 **placeholders** (`simulator`, `game-data`, `ui`).

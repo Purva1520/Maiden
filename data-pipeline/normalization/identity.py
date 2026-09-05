@@ -110,6 +110,8 @@ class PlayerIdentityResolver:
         self.players_by_cricsheet_id: dict[str, CanonicalPlayer] = {}
         # normalized_alias -> list of CanonicalPlayers
         self.players_by_normalized_alias: dict[str, list[CanonicalPlayer]] = {}
+        # normalized canonical/display name -> list of CanonicalPlayers (exact-match index)
+        self.players_by_normalized_name: dict[str, list[CanonicalPlayer]] = {}
         # (first_initial, surname) -> list of CanonicalPlayers
         self.players_by_initial_surname: dict[tuple[str, str], list[CanonicalPlayer]] = {}
         # (id_type, id_value) -> CanonicalPlayer
@@ -199,6 +201,14 @@ class PlayerIdentityResolver:
         for id_type, id_val in player.identifiers.items():
             key = (id_type, id_val)
             self.players_by_identifier[key] = player
+
+        # Exact-match index on canonical/display names only (Stage 2 lookup).
+        for name in (player.canonical_name, player.display_name):
+            norm_name = normalize_name_for_matching(name)
+            if norm_name:
+                nlist = self.players_by_normalized_name.setdefault(norm_name, [])
+                if player not in nlist:
+                    nlist.append(player)
 
         # Index all aliases (and canonical/display names)
         all_aliases = player.aliases | {player.canonical_name, player.display_name}
@@ -336,12 +346,10 @@ class PlayerIdentityResolver:
         # -------------------------------------------------------------------
         # Stage 2: Exact Canonical Name Match
         # -------------------------------------------------------------------
-        exact_matches = [
-            p
-            for p in self.players_by_id.values()
-            if normalize_name_for_matching(p.canonical_name) == norm_name
-            or normalize_name_for_matching(p.display_name) == norm_name
-        ]
+        # O(1) index lookup instead of scanning every player (see §54 performance).
+        exact_matches = list(
+            {p.player_id: p for p in self.players_by_normalized_name.get(norm_name, [])}.values()
+        )
         # Only treat as exact match if it's a full name (not single initial + surname)
         words = norm_name.split()
         is_initial_abbrev = len(words) == 2 and len(words[0]) <= 2

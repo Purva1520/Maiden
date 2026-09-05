@@ -152,7 +152,9 @@ def run_resolution(
 
     # Insert team_aliases
     for alias, canon in get_canonical_team_aliases().items():
-        row = new_conn.execute("SELECT team_id FROM teams WHERE LOWER(canonical_name) = LOWER(?)", (canon,)).fetchone()
+        row = new_conn.execute(
+            "SELECT team_id FROM teams WHERE LOWER(canonical_name) = LOWER(?)", (canon,)
+        ).fetchone()
         if row:
             new_conn.execute(
                 "INSERT INTO team_aliases (team_id, alias, normalized_alias, source) VALUES (?, ?, ?, ?)",
@@ -176,13 +178,27 @@ def run_resolution(
     aliases_batch = []
     identifiers_batch = []
     for p in resolver.players_by_id.values():
-        players_batch.append((p.player_id, p.canonical_name, p.display_name, p.cricsheet_id, p.country_id, p.active_from, p.active_to))
+        players_batch.append(
+            (
+                p.player_id,
+                p.canonical_name,
+                p.display_name,
+                p.cricsheet_id,
+                p.country_id,
+                p.active_from,
+                p.active_to,
+            )
+        )
         for alias in p.aliases:
             norm_alias = normalize_name_for_matching(alias)
             if norm_alias:
-                aliases_batch.append((p.player_id, alias, norm_alias, p.provenance_source, p.provenance_ref))
+                aliases_batch.append(
+                    (p.player_id, alias, norm_alias, p.provenance_source, p.provenance_ref)
+                )
         for id_type, id_val in p.identifiers.items():
-            identifiers_batch.append((p.player_id, id_type, id_val, p.provenance_source, p.provenance_ref))
+            identifiers_batch.append(
+                (p.player_id, id_type, id_val, p.provenance_source, p.provenance_ref)
+            )
 
     with new_conn:
         new_conn.executemany(
@@ -223,41 +239,104 @@ def run_resolution(
             audit_batch,
         )
 
-    # Migrate tournament_squads with new player_id
+    # Safety net: any reference that could not be resolved was mapped to an
+    # `unresolved_<oldid>` slug. Create a minimal players row for each so foreign
+    # keys always hold; these are also tracked in the review queue.
+    unresolved_ids = sorted({v for v in id_migration_map.values() if v.startswith("unresolved_")})
+    if unresolved_ids:
+        logger.warning(
+            "Creating %d placeholder players for unresolved references", len(unresolved_ids)
+        )
+        with new_conn:
+            new_conn.executemany(
+                "INSERT OR IGNORE INTO players (player_id, canonical_name, display_name) "
+                "VALUES (?, ?, ?)",
+                [(uid, uid, uid) for uid in unresolved_ids],
+            )
+
+    # Migrate tournament_squads with new player_id.
+    #
+    # After identity resolution two curated squad rows may collapse to the same
+    # canonical player_id (e.g. "Sreesanth" and "S Sreesanth" -> s_sreesanth).
+    # That would violate UNIQUE(tournament_id, team_id, player_id), so we merge
+    # such rows instead of crashing: keep the first, OR the participated/keeper
+    # flags, prefer a WK role, and record every merge for review.
+    squad_merges: list[dict] = []
     try:
         squad_rows = conn.execute("SELECT * FROM tournament_squads").fetchall()
         logger.info("Migrating %d tournament_squads records...", len(squad_rows))
-        squads_batch = []
+        squads_batch: list[list] = []
+        seen_squad: dict[tuple, int] = {}  # (tid, team_id, new_pid) -> row index
         for r in squad_rows:
             old_pid = str(r["player_id"])
             new_pid = id_migration_map.get(old_pid, old_pid)
-            squads_batch.append((
-                r["tournament_id"],
-                r["team_id"],
-                new_pid,
-                r["role"],
-                r["wicketkeeper"],
-                r["participated"],
-                r["squad_order"],
-                r["source"],
-                r["source_reference"],
-                r["source_notes"],
-                r["original_player_name"],
-                r["original_team_name"],
-            ))
+            key = (r["tournament_id"], r["team_id"], new_pid)
+            if key in seen_squad:
+                idx = seen_squad[key]
+                kept = squads_batch[idx]
+                # kept fields: 0 tid,1 team_id,2 player_id,3 role,4 wk,5 participated,...
+                kept[5] = 1 if (kept[5] or r["participated"]) else 0
+                kept[4] = 1 if (kept[4] or r["wicketkeeper"]) else 0
+                if r["role"] == "WK":
+                    kept[3] = "WK"
+                squad_merges.append(
+                    {
+                        "tournament_id": r["tournament_id"],
+                        "team_id": r["team_id"],
+                        "canonical_player_id": new_pid,
+                        "kept_name": kept[10],
+                        "merged_name": r["original_player_name"],
+                    }
+                )
+                continue
+            seen_squad[key] = len(squads_batch)
+            squads_batch.append(
+                [
+                    r["tournament_id"],
+                    r["team_id"],
+                    new_pid,
+                    r["role"],
+                    r["wicketkeeper"],
+                    r["participated"],
+                    r["squad_order"],
+                    r["source"],
+                    r["source_reference"],
+                    r["source_notes"],
+                    r["original_player_name"],
+                    r["original_team_name"],
+                ]
+            )
         with new_conn:
             new_conn.executemany(
                 "INSERT INTO tournament_squads "
                 "(tournament_id, team_id, player_id, role, wicketkeeper, participated, "
-                "squad_order, source, source_reference, source_notes, original_player_name, original_team_name) "
+                "squad_order, source, source_reference, source_notes, original_player_name, "
+                "original_team_name) "
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                squads_batch,
+                [tuple(row) for row in squads_batch],
+            )
+        if squad_merges:
+            logger.warning(
+                "Merged %d duplicate squad rows that resolved to the same canonical "
+                "player (see squad_merges.json)",
+                len(squad_merges),
             )
     except sqlite3.OperationalError:
         pass
 
     # Migrate matches & ball-by-ball tables if present
-    for tbl in ("matches", "match_dates", "match_players", "match_officials", "innings", "overs", "deliveries", "delivery_extras", "delivery_wickets", "wicket_fielders"):
+    for tbl in (
+        "matches",
+        "match_dates",
+        "match_players",
+        "match_officials",
+        "innings",
+        "overs",
+        "deliveries",
+        "delivery_extras",
+        "delivery_wickets",
+        "wicket_fielders",
+    ):
         try:
             rows = conn.execute(f"SELECT * FROM {tbl}").fetchall()
             if not rows:
@@ -268,17 +347,25 @@ def run_resolution(
                 r_dict = dict(r)
                 # Map player_id fields if present
                 if tbl == "matches" and r_dict.get("player_of_match_id"):
-                    r_dict["player_of_match_id"] = id_migration_map.get(str(r_dict["player_of_match_id"]), r_dict["player_of_match_id"])
+                    r_dict["player_of_match_id"] = id_migration_map.get(
+                        str(r_dict["player_of_match_id"]), r_dict["player_of_match_id"]
+                    )
                 elif tbl == "match_players" and r_dict.get("player_id"):
-                    r_dict["player_id"] = id_migration_map.get(str(r_dict["player_id"]), r_dict["player_id"])
+                    r_dict["player_id"] = id_migration_map.get(
+                        str(r_dict["player_id"]), r_dict["player_id"]
+                    )
                 elif tbl == "deliveries":
                     for f in ("batter_id", "non_striker_id", "bowler_id"):
                         if r_dict.get(f):
                             r_dict[f] = id_migration_map.get(str(r_dict[f]), r_dict[f])
                 elif tbl == "delivery_wickets" and r_dict.get("player_out_id"):
-                    r_dict["player_out_id"] = id_migration_map.get(str(r_dict["player_out_id"]), r_dict["player_out_id"])
+                    r_dict["player_out_id"] = id_migration_map.get(
+                        str(r_dict["player_out_id"]), r_dict["player_out_id"]
+                    )
                 elif tbl == "wicket_fielders" and r_dict.get("fielder_id"):
-                    r_dict["fielder_id"] = id_migration_map.get(str(r_dict["fielder_id"]), r_dict["fielder_id"])
+                    r_dict["fielder_id"] = id_migration_map.get(
+                        str(r_dict["fielder_id"]), r_dict["fielder_id"]
+                    )
 
                 table_batch.append(tuple(r_dict[c] for c in cols))
 
@@ -323,6 +410,11 @@ def run_resolution(
     report_txt.write_text(rep_text + "\n", encoding="utf-8")
     review_json.write_text(json.dumps(resolver.review_queue, indent=2) + "\n", encoding="utf-8")
 
+    merges_json = config.PROCESSED_DIR / "squad_merges.json"
+    merges_json.write_text(json.dumps(squad_merges, indent=2) + "\n", encoding="utf-8")
+    if squad_merges:
+        logger.info("Squad merges written: %s (%d merges)", merges_json, len(squad_merges))
+
     logger.info("Report written: %s", report_json)
     logger.info("Review queue written: %s (%d items)", review_json, len(resolver.review_queue))
     return 0
@@ -330,7 +422,9 @@ def run_resolution(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Resolve player identities and migrate database.")
-    parser.add_argument("--dry-run", action="store_true", help="Simulate resolution without modifying DB")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Simulate resolution without modifying DB"
+    )
     parser.add_argument("--db", type=Path, default=config.DB_PATH, help="Path to maiden.sqlite")
     parser.add_argument("--output-report", type=Path, help="Path to write report JSON")
     parser.add_argument("--output-review", type=Path, help="Path to write review JSON")

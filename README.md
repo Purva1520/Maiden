@@ -7,14 +7,17 @@ World Cup editions, draft a Playing XI from the players who actually featured in
 those tournaments, and simulate complete matches ball-by-ball — then try to go
 **Invincible** across a campaign.
 
-> **Current phase: Phase 2 — Historical World Cup Database (Complete).**
-> Phase 1 (Cricsheet Data Pipeline) and Phase 2 (Curated World Cup Universe) are
-> fully implemented. All 22 historical ODI and T20 World Cups, 275 tournament-team
-> mappings, and 3,341 curated squad records are normalized and validated in
-> `data/processed/maiden.sqlite`.
+> **Current phase: Phase 3 — Player Identity & Normalization (Complete).**
+> Phase 1 (Cricsheet pipeline), Phase 2 (22-edition World Cup universe), and
+> Phase 3 (canonical player identity/entity resolution) are implemented. Every
+> player reference across matches, deliveries, and tournament squads resolves to a
+> stable canonical `player_id` in `data/processed/maiden.sqlite`. **Phase 4
+> (Tournament Statistics & Era Normalization) is next.**
 >
 > Player ratings, simulation engine, campaign mode, and frontend follow in
-> subsequent phases. See [`docs/roadmap.md`](docs/roadmap.md).
+> subsequent phases. See [`docs/roadmap.md`](docs/roadmap.md),
+> [`docs/world-cup-data.md`](docs/world-cup-data.md), and
+> [`docs/player-identity.md`](docs/player-identity.md).
 
 ## Tech stack
 
@@ -94,12 +97,36 @@ The World Cup pipeline updates `data/processed/maiden.sqlite` with the 22 tourna
 275 teams, and 3,341 squad records, and produces `data/processed/world_cup_report.json`
 / `world_cup_report.txt`.
 
+### Player identity (Phase 3)
+
+```bash
+python scripts/resolve_players.py --dry-run  # simulate identity resolution
+python scripts/resolve_players.py            # migrate DB to canonical player ids
+python scripts/validate_identity.py          # FK + identity integrity checks
+```
+
+See [`docs/player-identity.md`](docs/player-identity.md).
+
+### Full build order
+
+The database is built in sequence — **run these in order** (each builds on the
+previous):
+
+```bash
+python scripts/download_cricsheet.py         # 1. fetch Cricsheet archives (once)
+python scripts/build_database.py             # 2. Phase 1: matches/deliveries
+python scripts/build_world_cup_database.py   # 3. Phase 2: World Cup universe
+python scripts/resolve_players.py            # 4. Phase 3: canonical identities
+```
+
+Then `validate_world_cups.py` + `validate_identity.py` to verify.
+
 ## Roadmap
 
 Phase 0 established the project foundation, Phase 1 delivered the Cricsheet match
-pipeline, and Phase 2 delivered the historical World Cup database. The full phase
-plan (identity resolution, ratings, simulation engine, campaign, frontend) is in
-[`docs/roadmap.md`](docs/roadmap.md).
+pipeline, Phase 2 delivered the historical World Cup database, and Phase 3 added
+the canonical player-identity layer. Phase 4 (Tournament Statistics & Era
+Normalization) is next. Full plan in [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Data attribution
 

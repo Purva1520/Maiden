@@ -8,8 +8,8 @@ is planned scope, not existing functionality.
 | 0     | Project Foundation                | ✅ Done |
 | 1     | Cricsheet Data Pipeline           | ✅ Done |
 | 2     | Historical World Cup Database     | ✅ Done |
-| 3     | Player Identity & Normalization   | Planned |
-| 4     | Tournament Statistics & Era Norm. | Planned |
+| 3     | Player Identity & Normalization   | ✅ Done |
+| 4     | Tournament Statistics & Era Norm. | ⏭️ Next |
 | 5     | Maiden Rating System              | Planned |
 | 6     | Cricket Simulation Engine         | Planned |
 | 7     | Simulation Calibration            | Planned |
@@ -42,6 +42,21 @@ participating tournament-team mappings, and complete 15-player tournament squads
 flags. Loaded into `tournaments`, `tournament_teams`, and `tournament_squads` with
 full foreign key integrity, query API (`getSquad`, `get_tournament`, etc.),
 and automated validation reporting (`data/processed/world_cup_report.json`).
+
+## Phase 3 — Player Identity & Normalization (done)
+
+Canonical identity layer resolving every player reference (matches, deliveries,
+tournament squads) to one stable `player_id` — anchored on the Cricsheet Register,
+with aliases, external identifiers, an audit log, manual overrides, and a review
+queue. Conservative resolution hierarchy (override → identifier → exact → alias →
+context → REVIEW) that never force-merges ambiguous names. Also normalizes teams,
+tournaments, dates, and roles. See [`player-identity.md`](player-identity.md).
+
+## Phase 4 — Tournament Statistics & Era Normalization (next)
+
+Not started. Will compute per-tournament batting/bowling statistics from the
+canonical match data and normalize them across eras. Builds on the Phase 3
+canonical identities.
 
 ## Game vision (future)
 

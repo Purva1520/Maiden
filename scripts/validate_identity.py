@@ -53,7 +53,9 @@ def validate_identity(db_path: Path) -> int:
 
     for table, col in checks:
         try:
-            null_count = conn.execute(f"SELECT COUNT(*) FROM {table} WHERE {col} IS NULL").fetchone()[0]
+            null_count = conn.execute(
+                f"SELECT COUNT(*) FROM {table} WHERE {col} IS NULL"
+            ).fetchone()[0]
             if null_count > 0:
                 errors.append(f"Table '{table}' has {null_count} NULL '{col}' values")
 
@@ -64,7 +66,9 @@ def validate_identity(db_path: Path) -> int:
                 f"WHERE p.player_id IS NULL AND t.{col} IS NOT NULL"
             ).fetchone()[0]
             if orphan_count > 0:
-                errors.append(f"Table '{table}' has {orphan_count} orphan '{col}' references not found in players")
+                errors.append(
+                    f"Table '{table}' has {orphan_count} orphan '{col}' references not found in players"
+                )
         except sqlite3.OperationalError:
             pass  # Table does not exist in this test configuration
 
@@ -84,13 +88,35 @@ def validate_identity(db_path: Path) -> int:
 
     # 4. Check resolution log summary
     try:
-        amb_count = conn.execute("SELECT COUNT(*) FROM player_resolution_log WHERE resolution_status = 'REVIEW'").fetchone()[0]
+        amb_count = conn.execute(
+            "SELECT COUNT(*) FROM player_resolution_log WHERE resolution_status = 'REVIEW'"
+        ).fetchone()[0]
         if amb_count > 0:
-            warnings.append(f"{amb_count} player reference(s) flagged for REVIEW in player_resolution_log")
+            warnings.append(
+                f"{amb_count} player reference(s) flagged for REVIEW in player_resolution_log"
+            )
     except sqlite3.OperationalError:
         pass
 
-    # 5. Summary counts
+    # 5. Detect an un-migrated database (Phase 3 not applied). Phase 1 assigns
+    #    integer player ids; canonical Phase 3 ids are slugs. A purely-numeric id
+    #    means resolve_players.py has not been run against this database.
+    numeric_ids = conn.execute(
+        "SELECT COUNT(*) FROM players "
+        "WHERE player_id GLOB '[0-9]*' AND NOT player_id GLOB '*[^0-9]*'"
+    ).fetchone()[0]
+    if numeric_ids > 0:
+        errors.append(
+            f"{numeric_ids} players still have numeric (Phase 1) ids — the Phase 3 identity "
+            f"migration has NOT been applied. Run: python scripts/resolve_players.py"
+        )
+    if conn.execute("SELECT COUNT(*) FROM player_identifiers").fetchone()[0] == 0:
+        warnings.append(
+            "player_identifiers is empty — Cricsheet Register identifiers are not linked "
+            "(has resolve_players.py been run?)"
+        )
+
+    # 6. Summary counts
     total_players = conn.execute("SELECT COUNT(*) FROM players").fetchone()[0]
     total_aliases = conn.execute("SELECT COUNT(*) FROM player_aliases").fetchone()[0]
     total_identifiers = conn.execute("SELECT COUNT(*) FROM player_identifiers").fetchone()[0]

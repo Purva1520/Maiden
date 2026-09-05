@@ -55,6 +55,9 @@ class WorldCupReport:
     # Per-tournament detail
     tournament_details: list[dict] = field(default_factory=list)
 
+    # Coverage gaps: tournaments whose squads are incomplete (not fabricated).
+    incomplete_tournaments: list[dict] = field(default_factory=list)
+
     # Validation results
     duplicate_squad_records: int = 0
     unknown_tournaments: int = 0
@@ -122,6 +125,17 @@ class WorldCupReport:
                 f"{d['squads']:<8} {d['source_mix']}"
             )
         lines.append("")
+
+        # Coverage gaps (documented, non-fabricated limitation)
+        if self.incomplete_tournaments:
+            lines.append("Coverage Gaps (incomplete squads — need historical curation)")
+            lines.append("-" * 60)
+            for d in self.incomplete_tournaments:
+                lines.append(
+                    f"  {d['tournament_id']}: {d['teams_with_squads']}/{d['participating_teams']} "
+                    f"teams have squads ({d['squad_records']} records)"
+                )
+            lines.append("")
 
         # Validation
         lines += [
@@ -234,6 +248,34 @@ def generate_world_cup_report(conn: sqlite3.Connection) -> WorldCupReport:
                 "squads": squads,
                 "source_mix": source_mix,
             }
+        )
+
+    # --- Coverage completeness (documented limitation, not a fabrication) ---
+    # A tournament is "incomplete" if some participating team has no squad. We do
+    # NOT invent players to fill gaps; we report them so later phases know.
+    for t in tournaments:
+        tid = t[0]
+        participating = scalar(
+            "SELECT COUNT(*) FROM tournament_teams WHERE tournament_id = ?", (tid,)
+        )
+        teams_with_squads = scalar(
+            "SELECT COUNT(DISTINCT team_id) FROM tournament_squads WHERE tournament_id = ?", (tid,)
+        )
+        if participating and teams_with_squads < participating:
+            report.incomplete_tournaments.append(
+                {
+                    "tournament_id": tid,
+                    "participating_teams": participating,
+                    "teams_with_squads": teams_with_squads,
+                    "squad_records": scalar(
+                        "SELECT COUNT(*) FROM tournament_squads WHERE tournament_id = ?", (tid,)
+                    ),
+                }
+            )
+    if report.incomplete_tournaments:
+        report.warnings.append(
+            f"{len(report.incomplete_tournaments)} tournament(s) have incomplete squads "
+            f"(missing teams) — see Coverage Gaps; historical curation still required"
         )
 
     # --- Validation checks ---
